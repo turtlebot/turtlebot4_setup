@@ -1,0 +1,9 @@
+repositories:
+  irobot_create_msgs:
+    type: git
+    url: https://github.com/iRobotEducation/irobot_create_msgs.git
+    version: galactic
+  robot_upstart:
+    type: git
+    url: https://github.com/zifengqi123/robot_upstart.git
+    version: foxy-devel
