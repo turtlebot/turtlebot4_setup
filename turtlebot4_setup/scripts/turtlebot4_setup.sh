@@ -117,4 +117,7 @@ ros2 run robot_upstart install turtlebot4_bringup/launch/$model.launch.py --job 
 
 sudo systemctl daemon-reload
 
+# Copy Wifi script to home directory
+sudo cp $SETUP_DIR/scripts/wifi.sh ~/
+
 echo "Installation complete, restart required";
