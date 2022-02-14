@@ -95,8 +95,11 @@ fi
 sudo rosdep init
 rosdep update
 rosdep install -r --from-paths src -i -y --rosdistro galactic
-colcon build
+
+sudo bash $SCRIPT_DIR/swap_on.sh
+colcon build --symlink-install
 source install/setup.bash
+sudo bash $SCRIPT_DIR/swap_off.sh
 
 # Copy udev rules
 sudo cp $SETUP_DIR/udev/turtlebot4.rules /etc/udev/rules.d/
