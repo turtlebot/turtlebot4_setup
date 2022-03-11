@@ -8,6 +8,11 @@ Every Turtlebot4 comes with a SD card with a pre-installed Turtlebot4 image. If 
 
 - Download the [latest turtlebot4 image](https://github.com/turtlebot/turtlebot4-images).
 
+- Install the imaging tool dcfldd
+```bash
+sudo apt install dcfldd
+```
+
 - Insert your SD card into your PC and identify it:
 
 ```bash
