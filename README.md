@@ -1,12 +1,12 @@
-# Turtlebot4 Images
+# Turtlebot4 Setup
 
-Raspberry Pi Images for the Turtlebot4 and the setup scripts to create and install them.
+Setup scripts for the TurtleBot 4 Raspberry Pi.
 
 # Install or update pre-built image
 
 Every Turtlebot4 comes with a SD card with a pre-installed Turtlebot4 image. If you wish to install an image on your own SD card or update to a newer image, follow these instructions. 
 
-- Download the [latest turtlebot4 image](https://github.com/turtlebot/turtlebot4-images).
+- Download the [latest turtlebot4 image](http://download.ros.org/downloads/turtlebot4/).
 
 - Install the imaging tool dcfldd
 ```bash
@@ -47,7 +47,7 @@ First install the [Raspberry Pi Imager](https://www.raspberrypi.com/software/).
 
 - Connect the Raspberry Pi to your Network with an Ethernet cable.
 - Boot the Raspberry Pi. 
-- Find the Raspberry Pi's IP using your router's portal or by calling `arp -a` on your PC.
+- Find the Raspberry Pi's IP using your router's portal.
 - SSH into the Raspberry Pi using the IP address.
 ```bash
 ssh ubuntu@xxx.xxx.xxx.xxx
@@ -58,7 +58,7 @@ ssh ubuntu@xxx.xxx.xxx.xxx
 
 - Connect a keyboard to the Raspberry Pi via USB.
 - Connect a monitor to the Raspberry Pi via the HDMI0 port.
-- Boot the Raspberry Pi
+- Boot the Raspberry Pi.
 - The default login is `ubuntu` and password is `ubuntu`. You will be prompted to change your password.
 
 ## Manually configure Wi-Fi
@@ -79,7 +79,7 @@ wifis:
 ```
 Note: Ensure that `wifis:` is aligned with the existing `ethernets:` line. All indentations should be 4 spaces. Do not use tabs.
 - Reboot the Raspberry Pi. It should now be connected to your Wi-Fi.
-- Find the Raspberry Pi's IP using your router's portal or by calling `arp -a` on your PC.
+- Find the Raspberry Pi's IP using your router's portal.
 - SSH into the Raspberry Pi using the IP address.
 ```bash
 ssh ubuntu@xxx.xxx.xxx.xxx
@@ -94,7 +94,7 @@ mkdir ~/turtlebot4_ws/src -p
 - Clone this repository into the src folder
 ```bash
 cd ~/turtlebot4_ws/src
-git clone https://github.com/turtlebot/turtlebot4-images.git
+git clone https://github.com/turtlebot/turtlebot4_setup.git
 ```
 
 ## Automatic Setup
@@ -103,13 +103,13 @@ git clone https://github.com/turtlebot/turtlebot4-images.git
 ### Turtlebot4 Standard
 ```bash
 cd ~/turtlebot4_ws
-bash src/turtlebot4_robot/turtlebot4-images/scripts/turtlebot4_setup.sh -m standard
+bash src/turtlebot4_robot/turtlebot4_setup/scripts/turtlebot4_setup.sh -m standard
 ```
 
 ### Turtlebot4 Lite
 ```bash
 cd ~/turtlebot4_ws
-bash src/turtlebot4_robot/turtlebot4-images/scripts/turtlebot4_setup.sh -m lite
+bash src/turtlebot4_robot/turtlebot4_setup/scripts/turtlebot4_setup.sh -m lite
 ```
 
 - Run [Wi-Fi Setup](https://github.com/turtlebot/turtlebot4_robot#rpi4-wifi-setup) to enable the 5G Wi-Fi band.
@@ -188,7 +188,7 @@ source install/setup.bash
 
 ```bash
 cd ~/turtlebot4_ws
-sudo cp src/turtlebot4-images/turtlebot4_setup/udev/turtlebot4.rules /etc/udev/rules.d/
+sudo cp src/turtlebot4_setup/turtlebot4_setup/udev/turtlebot4.rules /etc/udev/rules.d/
 ```
 
 ### Enable usb0
