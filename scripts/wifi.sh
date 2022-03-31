@@ -14,20 +14,22 @@ Help()
    echo " s     WiFi SSID"
    echo " p     WiFi Password"
    echo " a     Access Point mode. Default SSID and password: Turtlebot4"
-   echo " c     Regulatory domain. Default CA"
+   echo " c     Send WiFi credentials to Create 3."
+   echo " r     Regulatory domain. Default CA"
    echo " h     Print this help statement"
    echo
 }
 
 ap=0;
 
-while getopts "s:p:c:ha" flag
+while getopts "s:p:c:r:ha" flag
 do
     case "${flag}" in
         s) ssid=${OPTARG};;
         p) password=${OPTARG};;
         a) ap=1;;
-        c) domain=${OPTARG};;
+        c) create3=1;;
+        r) domain=${OPTARG};;
         h)
             Help
             exit;;
@@ -111,6 +113,11 @@ then
     sudo sed -i "s/COUNTRY=.*/COUNTRY=$domain/g" /etc/environment
 else
     echo "COUNTRY=$domain" | sudo tee -a /etc/environment
+fi
+
+if [ $create3 -eq 1 ]
+then
+    curl -X POST -d "ssid=$ssid&passwd=$password" "http://192.168.186.2/cgi-bin/provisioning"
 fi
 
 sudo netplan generate
