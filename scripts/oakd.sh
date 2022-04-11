@@ -5,4 +5,4 @@ cd src
 mkdir luxonis
 cd luxonis
 git clone https://github.com/luxonis/depthai-ros.git -b main
-git clone https://github.com/luxonis/depthai-ros-examples.git -b devel
+git clone https://github.com/luxonis/depthai-ros-examples.git -b main
