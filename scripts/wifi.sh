@@ -21,8 +21,9 @@ Help()
 }
 
 ap=0;
+create3=0;
 
-while getopts "s:p:c:r:ha" flag
+while getopts "s:p:cr:ha" flag
 do
     case "${flag}" in
         s) ssid=${OPTARG};;
@@ -98,7 +99,7 @@ echo -e "network: \n\
 
 # Add regulatory domain
 
-# If reg domain already exists, replace it
+If reg domain already exists, replace it
 if grep -Fq "REGDOMAIN=" /etc/default/crda 
 then 
     sudo sed -i "s/REGDOMAIN=.*/REGDOMAIN=$domain/g" /etc/default/crda
@@ -107,7 +108,7 @@ else
 fi
 
 
-# If country domain already exists, replace it
+If country domain already exists, replace it
 if grep -Fq "COUNTRY=" /etc/environment 
 then 
     sudo sed -i "s/COUNTRY=.*/COUNTRY=$domain/g" /etc/environment
@@ -115,9 +116,22 @@ else
     echo "COUNTRY=$domain" | sudo tee -a /etc/environment
 fi
 
+create3_domain=ETSI;
+
+case $domain in
+
+    AS|CA|FM|GU|KY|MP|PR|TW|UM|US|VI)
+    create3_domain=FCC
+    ;;
+
+    JP)
+    create3_domain=Japan
+    ;;
+esac
+
 if [ $create3 -eq 1 ]
 then
-    curl -X POST -d "ssid=$ssid&passwd=$password" "http://192.168.186.2/cgi-bin/provisioning"
+    curl -X POST -d "ssids=$ssid&pass=$password&countryids=$create3_domain" "http://192.168.186.2/wifi-action-change"
 fi
 
 sudo netplan generate
