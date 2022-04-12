@@ -99,7 +99,7 @@ echo -e "network: \n\
 
 # Add regulatory domain
 
-If reg domain already exists, replace it
+#If reg domain already exists, replace it
 if grep -Fq "REGDOMAIN=" /etc/default/crda 
 then 
     sudo sed -i "s/REGDOMAIN=.*/REGDOMAIN=$domain/g" /etc/default/crda
@@ -108,7 +108,7 @@ else
 fi
 
 
-If country domain already exists, replace it
+#If country domain already exists, replace it
 if grep -Fq "COUNTRY=" /etc/environment 
 then 
     sudo sed -i "s/COUNTRY=.*/COUNTRY=$domain/g" /etc/environment
@@ -119,7 +119,6 @@ fi
 create3_domain=ETSI;
 
 case $domain in
-
     AS|CA|FM|GU|KY|MP|PR|TW|UM|US|VI)
     create3_domain=FCC
     ;;
