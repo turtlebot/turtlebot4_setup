@@ -1,9 +1,9 @@
 repositories:
-  irobot_create_msgs:
+  turtlebot4:
     type: git
-    url: https://github.com/iRobotEducation/irobot_create_msgs.git
+    url: https://github.com/turtlebot/turtlebot4.git
     version: galactic
-  robot_upstart:
+  turtlebot4_robot:
     type: git
-    url: https://github.com/clearpathrobotics/robot_upstart.git
-    version: foxy-devel
+    url: https://github.com/turtlebot/turtlebot4_robot.git
+    version: galactic

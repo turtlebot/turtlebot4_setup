@@ -50,17 +50,14 @@ bash $SCRIPT_DIR/galactic.sh
 source /opt/ros/galactic/setup.bash
 
 # Install source packages
-cd src
-git clone https://github.com/turtlebot/turtlebot4.git
-git clone https://github.com/turtlebot/turtlebot4_robot.git
-cd ..
 vcs import src < $SETUP_DIR/turtlebot4_packages.repos
 
 # Install additional packages
 sudo apt install -y \
 libgpiod-dev \
 network-manager \
-daemontools 
+daemontools \
+ros-galactic-robot-upstart
 
 # Install bluetooth packages
 bash $SCRIPT_DIR/bluetooth.sh
@@ -98,12 +95,8 @@ ros2 run robot_upstart install turtlebot4_bringup/launch/$model.launch.py --job 
 
 sudo systemctl daemon-reload
 
-# Copy Wifi and Create 3 Update scripts to local bin
-chmod +x $SETUP_DIR/scripts/wifi.sh
-sudo cp $SETUP_DIR/scripts/wifi.sh /usr/local/bin
-
-chmod +x $SETUP_DIR/scripts/create_update.sh
-sudo cp $SETUP_DIR/scripts/create_update.sh /usr/local/bin
+# Copy scripts to local bin
+sudo cp $SETUP_DIR/scripts/wifi.sh $SETUP_DIR/scripts/create_update.sh $SETUP_DIR/scripts/swap_on.sh $SETUP_DIR/scripts/swap_off.sh /usr/local/bin
 
 read -p "Installation complete, press enter to reboot."
 
