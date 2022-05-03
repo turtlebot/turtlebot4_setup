@@ -74,6 +74,7 @@ echo "SSID: $ssid";
 echo "Password: $password";
 echo "AP mode: $ap";
 echo "Domain: $domain";
+read -p "Press enter to apply these settings."
 
 # Create netplan .yaml file
 echo -e "network: \n\
@@ -82,6 +83,7 @@ echo -e "network: \n\
         eth0: \n\
             dhcp4: true \n\
             optional: true \n\
+            addresses: [192.168.185.3/24] \n\
         usb0: \n\
             dhcp4: false \n\
             optional: true \n\
@@ -101,7 +103,7 @@ echo -e "network: \n\
 
 #If reg domain already exists, replace it
 if grep -Fq "REGDOMAIN=" /etc/default/crda 
-then 
+then
     sudo sed -i "s/REGDOMAIN=.*/REGDOMAIN=$domain/g" /etc/default/crda
 else
     echo "REGDOMAIN=$domain" | sudo tee -a /etc/default/crda
@@ -110,7 +112,7 @@ fi
 
 #If country domain already exists, replace it
 if grep -Fq "COUNTRY=" /etc/environment 
-then 
+then
     sudo sed -i "s/COUNTRY=.*/COUNTRY=$domain/g" /etc/environment
 else
     echo "COUNTRY=$domain" | sudo tee -a /etc/environment
@@ -123,7 +125,7 @@ case $domain in
     create3_domain=FCC
     ;;
 
-    JP)
+    JP|JP3)
     create3_domain=Japan
     ;;
 esac

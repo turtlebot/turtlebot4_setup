@@ -57,7 +57,8 @@ sudo apt install -y \
 libgpiod-dev \
 network-manager \
 daemontools \
-ros-galactic-robot-upstart
+ros-galactic-robot-upstart \
+chrony
 
 # Install bluetooth packages
 bash $SCRIPT_DIR/bluetooth.sh
@@ -78,6 +79,12 @@ sudo bash $SCRIPT_DIR/swap_off.sh
 # Copy udev rules
 sudo cp $SETUP_DIR/udev/turtlebot4.rules /etc/udev/rules.d/
 
+# Copy chrony config
+sudo cp $SETUP_DIR/conf/chrony.conf /etc/chrony/
+
+# Restart chrony
+sudo service chrony restart
+
 # Enable usb0
 echo "dtoverlay=dwc2,dr_mode=peripheral" | sudo tee -a /boot/firmware/usercfg.txt
 sudo sed -i '${s/$/ modules-load=dwc2,g_ether/}' /boot/firmware/cmdline.txt
@@ -89,9 +96,12 @@ echo "dtoverlay=i2c-gpio,bus=3,i2c_gpio_delay_us=1,i2c_gpio_sda=4,i2c_gpio_scl=5
 echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" | sudo tee -a ~/.bashrc
 echo "export CYCLONEDDS_URI='<CycloneDDS><Domain><General><NetworkInterfaceAddress>wlan0,usb0</></></></>'" | sudo tee -a ~/.bashrc
 
+# Source galactic setup in bashrc
+echo "source /opt/ros/galactic/setup.bash" | sudo tee -a ~/.bashrc
+
 # Robot upstart
 
-ros2 run robot_upstart install turtlebot4_bringup/launch/$model.launch.py --job turtlebot4
+ros2 run robot_upstart install turtlebot4_bringup/launch/$model.launch.py --job turtlebot4 --rmw rmw_cyclonedds_cpp --rmw_config "'<CycloneDDS><Domain><General><NetworkInterfaceAddress>wlan0,usb0</></></></>'"
 
 sudo systemctl daemon-reload
 
