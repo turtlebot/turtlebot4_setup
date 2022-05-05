@@ -60,8 +60,6 @@ daemontools \
 ros-galactic-robot-upstart \
 chrony
 
-# Install bluetooth packages
-bash $SCRIPT_DIR/bluetooth.sh
 # Install OAK-D drivers
 bash $SCRIPT_DIR/oakd.sh
 
@@ -72,7 +70,7 @@ rosdep install -r --from-paths src -i -y --rosdistro galactic
 
 # Add swap memory and build packages
 sudo bash $SCRIPT_DIR/swap_on.sh
-colcon build --symlink-install
+colcon build --symlink-install --executor sequential
 source install/setup.bash
 sudo bash $SCRIPT_DIR/swap_off.sh
 
@@ -93,15 +91,16 @@ sudo sed -i '${s/$/ modules-load=dwc2,g_ether/}' /boot/firmware/cmdline.txt
 echo "dtoverlay=i2c-gpio,bus=3,i2c_gpio_delay_us=1,i2c_gpio_sda=4,i2c_gpio_scl=5" | sudo tee -a /boot/firmware/usercfg.txt 
 
 # Configure cyclonedds
+sudo cp $SETUP_DIR/conf/cyclonedds_rpi.xml /etc/
 echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" | sudo tee -a ~/.bashrc
-echo "export CYCLONEDDS_URI='<CycloneDDS><Domain><General><NetworkInterfaceAddress>wlan0,usb0</></></></>'" | sudo tee -a ~/.bashrc
+echo "export CYCLONEDDS_URI=/etc/cyclonedds_rpi.xml" | sudo tee -a ~/.bashrc
 
 # Source galactic setup in bashrc
 echo "source /opt/ros/galactic/setup.bash" | sudo tee -a ~/.bashrc
 
 # Robot upstart
 
-ros2 run robot_upstart install turtlebot4_bringup/launch/$model.launch.py --job turtlebot4 --rmw rmw_cyclonedds_cpp --rmw_config "'<CycloneDDS><Domain><General><NetworkInterfaceAddress>wlan0,usb0</></></></>'"
+ros2 run robot_upstart install turtlebot4_bringup/launch/$model.launch.py --job turtlebot4 --rmw rmw_cyclonedds_cpp --rmw_config /etc/cyclonedds_rpi.xml
 
 sudo systemctl daemon-reload
 
