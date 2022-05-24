@@ -2,7 +2,6 @@
 
 # Flags:
 # -m Turtlebot4 Model (lite, standard)
-# -c OAK-D Camera Model (lite, pro)
 
 Help()
 {
@@ -60,9 +59,6 @@ daemontools \
 ros-galactic-robot-upstart \
 chrony
 
-# Install OAK-D drivers
-bash $SCRIPT_DIR/oakd.sh
-
 # Run rosdep
 sudo rosdep init
 rosdep update
@@ -105,7 +101,12 @@ ros2 run robot_upstart install turtlebot4_bringup/launch/$model.launch.py --job 
 sudo systemctl daemon-reload
 
 # Copy scripts to local bin
-sudo cp $SETUP_DIR/scripts/wifi.sh $SETUP_DIR/scripts/create_update.sh $SETUP_DIR/scripts/swap_on.sh $SETUP_DIR/scripts/swap_off.sh /usr/local/bin
+sudo cp $SETUP_DIR/scripts/wifi.sh \
+        $SETUP_DIR/scripts/create_update_0.4.0.sh \
+        $SETUP_DIR/scripts/create_update.sh \
+        $SETUP_DIR/scripts/swap_on.sh \
+        $SETUP_DIR/scripts/swap_off.sh \
+        $SETUP_DIR/scripts/bluetooth.sh /usr/local/bin
 
 read -p "Installation complete, press enter to reboot."
 
