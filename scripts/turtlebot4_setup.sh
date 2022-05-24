@@ -53,7 +53,6 @@ vcs import src < $SETUP_DIR/turtlebot4_packages.repos
 
 # Install additional packages
 sudo apt install -y \
-libgpiod-dev \
 network-manager \
 daemontools \
 ros-galactic-robot-upstart \
@@ -96,7 +95,10 @@ echo "source /opt/ros/galactic/setup.bash" | sudo tee -a ~/.bashrc
 
 # Robot upstart
 
-ros2 run robot_upstart install turtlebot4_bringup/launch/$model.launch.py --job turtlebot4 --rmw rmw_cyclonedds_cpp --rmw_config /etc/cyclonedds_rpi.xml
+ros2 run robot_upstart install turtlebot4_bringup/launch/$model.launch.py --job turtlebot4 \
+                                                                          --rmw rmw_cyclonedds_cpp \
+                                                                          --rmw_config /etc/cyclonedds_rpi.xml \
+                                                                          --setup /opt/ros/galactic/setup.bash
 
 sudo systemctl daemon-reload
 
@@ -108,6 +110,6 @@ sudo cp $SETUP_DIR/scripts/wifi.sh \
         $SETUP_DIR/scripts/swap_off.sh \
         $SETUP_DIR/scripts/bluetooth.sh /usr/local/bin
 
-read -p "Installation complete, press enter to reboot."
+echo "Installation complete, press enter to reboot in AP mode."
 
-sudo reboot
+sudo $SETUP_DIR/scripts/wifi.sh -a && sudo reboot
