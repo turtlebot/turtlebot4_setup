@@ -48,26 +48,14 @@ SETUP_DIR=${SCRIPT_DIR%/*}
 bash $SCRIPT_DIR/galactic.sh
 source /opt/ros/galactic/setup.bash
 
-# Install source packages
-vcs import src < $SETUP_DIR/turtlebot4_packages.repos
-
-# Install additional packages
+# Install packages
 sudo apt install -y \
 network-manager \
 daemontools \
 ros-galactic-robot-upstart \
-chrony
-
-# Run rosdep
-sudo rosdep init
-rosdep update
-rosdep install -r --from-paths src -i -y --rosdistro galactic
-
-# Add swap memory and build packages
-sudo bash $SCRIPT_DIR/swap_on.sh
-colcon build --symlink-install --executor sequential
-source install/setup.bash
-sudo bash $SCRIPT_DIR/swap_off.sh
+chrony \
+ros-galactic-turtlebot4-robot \
+ros-galactic-irobot-create-control
 
 # Copy udev rules
 sudo cp $SETUP_DIR/udev/turtlebot4.rules /etc/udev/rules.d/
