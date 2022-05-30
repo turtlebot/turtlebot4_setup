@@ -1,5 +1,21 @@
 #!/usr/bin/env bash
 
+# Copyright 2022 Clearpath Robotics, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @author Roni Kreinin (rkreinin@clearpathrobotics.com)
+
 # Flags:
 # -m Turtlebot4 Model (lite, standard)
 
@@ -82,21 +98,19 @@ echo "export CYCLONEDDS_URI=/etc/cyclonedds_rpi.xml" | sudo tee -a ~/.bashrc
 echo "source /opt/ros/galactic/setup.bash" | sudo tee -a ~/.bashrc
 
 # Robot upstart
-
-ros2 run robot_upstart install turtlebot4_bringup/launch/$model.launch.py --job turtlebot4 \
-                                                                          --rmw rmw_cyclonedds_cpp \
-                                                                          --rmw_config /etc/cyclonedds_rpi.xml \
-                                                                          --setup /opt/ros/galactic/setup.bash
+$SCRIPT_DIR/install.py $model
 
 sudo systemctl daemon-reload
 
 # Copy scripts to local bin
-sudo cp $SETUP_DIR/scripts/wifi.sh \
-        $SETUP_DIR/scripts/create_update_0.4.0.sh \
-        $SETUP_DIR/scripts/create_update.sh \
-        $SETUP_DIR/scripts/swap_on.sh \
-        $SETUP_DIR/scripts/swap_off.sh \
-        $SETUP_DIR/scripts/bluetooth.sh /usr/local/bin
+sudo cp $SCRIPT_DIR/wifi.sh \
+        $SCRIPT_DIR/create_update_0.4.0.sh \
+        $SCRIPT_DIR/create_update.sh \
+        $SCRIPT_DIR/swap_on.sh \
+        $SCRIPT_DIR/swap_off.sh \
+        $SCRIPT_DIR/bluetooth.sh \
+        $SCRIPT_DIR/install.py \
+        $SCRIPT_DIR/uninstall.py /usr/local/bin
 
 echo "Installation complete, press enter to reboot in AP mode."
 
