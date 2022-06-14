@@ -97,6 +97,7 @@ echo -e "network: \n\
                 $ssid: \n\
                     password: $password \n\
                    $ap_comment mode: ap \n\
+                   $ap_comment band: 5GHz \n\
             dhcp4: true\n" | sudo tee /etc/netplan/50-cloud-init.yaml
 
 # Add regulatory domain

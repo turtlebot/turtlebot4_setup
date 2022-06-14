@@ -1,8 +1,23 @@
 #!/usr/bin/env bash
 
+# Copyright 2022 Clearpath Robotics, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @author Roni Kreinin (rkreinin@clearpathrobotics.com)
+
 # Flags:
 # -m Turtlebot4 Model (lite, standard)
-# -c OAK-D Camera Model (lite, pro)
 
 Help()
 {
@@ -49,32 +64,14 @@ SETUP_DIR=${SCRIPT_DIR%/*}
 bash $SCRIPT_DIR/galactic.sh
 source /opt/ros/galactic/setup.bash
 
-# Install source packages
-vcs import src < $SETUP_DIR/turtlebot4_packages.repos
-
-# Install additional packages
+# Install packages
 sudo apt install -y \
-libgpiod-dev \
 network-manager \
 daemontools \
 ros-galactic-robot-upstart \
-chrony
-
-# Install bluetooth packages
-bash $SCRIPT_DIR/bluetooth.sh
-# Install OAK-D drivers
-bash $SCRIPT_DIR/oakd.sh
-
-# Run rosdep
-sudo rosdep init
-rosdep update
-rosdep install -r --from-paths src -i -y --rosdistro galactic
-
-# Add swap memory and build packages
-sudo bash $SCRIPT_DIR/swap_on.sh
-colcon build --symlink-install
-source install/setup.bash
-sudo bash $SCRIPT_DIR/swap_off.sh
+chrony \
+ros-galactic-turtlebot4-robot \
+ros-galactic-irobot-create-control
 
 # Copy udev rules
 sudo cp $SETUP_DIR/udev/turtlebot4.rules /etc/udev/rules.d/
@@ -93,21 +90,32 @@ sudo sed -i '${s/$/ modules-load=dwc2,g_ether/}' /boot/firmware/cmdline.txt
 echo "dtoverlay=i2c-gpio,bus=3,i2c_gpio_delay_us=1,i2c_gpio_sda=4,i2c_gpio_scl=5" | sudo tee -a /boot/firmware/usercfg.txt 
 
 # Configure cyclonedds
+sudo cp $SETUP_DIR/conf/cyclonedds_rpi.xml /etc/
 echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" | sudo tee -a ~/.bashrc
-echo "export CYCLONEDDS_URI='<CycloneDDS><Domain><General><NetworkInterfaceAddress>wlan0,usb0</></></></>'" | sudo tee -a ~/.bashrc
+echo "export CYCLONEDDS_URI=/etc/cyclonedds_rpi.xml" | sudo tee -a ~/.bashrc
 
 # Source galactic setup in bashrc
 echo "source /opt/ros/galactic/setup.bash" | sudo tee -a ~/.bashrc
 
 # Robot upstart
-
-ros2 run robot_upstart install turtlebot4_bringup/launch/$model.launch.py --job turtlebot4 --rmw rmw_cyclonedds_cpp --rmw_config "'<CycloneDDS><Domain><General><NetworkInterfaceAddress>wlan0,usb0</></></></>'"
+$SCRIPT_DIR/install.py $model
 
 sudo systemctl daemon-reload
 
 # Copy scripts to local bin
-sudo cp $SETUP_DIR/scripts/wifi.sh $SETUP_DIR/scripts/create_update.sh $SETUP_DIR/scripts/swap_on.sh $SETUP_DIR/scripts/swap_off.sh /usr/local/bin
+sudo cp $SCRIPT_DIR/wifi.sh \
+        $SCRIPT_DIR/create_update_0.4.0.sh \
+        $SCRIPT_DIR/create_update.sh \
+        $SCRIPT_DIR/swap_on.sh \
+        $SCRIPT_DIR/swap_off.sh \
+        $SCRIPT_DIR/bluetooth.sh \
+        $SCRIPT_DIR/install.py \
+        $SCRIPT_DIR/uninstall.py /usr/local/bin
 
-read -p "Installation complete, press enter to reboot."
+# Set image information
+sudo touch /etc/turtlebot4
+echo "TurtleBot 4 $model v0.1.2" | sudo tee /etc/turtlebot4
 
-sudo reboot
+echo "Installation complete, press enter to reboot in AP mode."
+
+sudo $SETUP_DIR/scripts/wifi.sh -a && sudo reboot
