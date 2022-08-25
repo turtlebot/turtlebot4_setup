@@ -69,6 +69,7 @@ sudo apt install -y \
 network-manager \
 daemontools \
 chrony \
+socat \
 ros-galactic-robot-upstart \
 ros-galactic-turtlebot4-robot \
 ros-galactic-irobot-create-control \
@@ -83,12 +84,21 @@ sudo cp $SETUP_DIR/conf/chrony.conf /etc/chrony/
 # Restart chrony
 sudo service chrony restart
 
+# Copy webserver service
+sudo cp $SETUP_DIR/conf/webserver.service /etc/systemd/system/
+
+# Enable webserver service to run from boot
+sudo systemctl enable webserver.service
+
 # Enable usb0
 echo "dtoverlay=dwc2,dr_mode=peripheral" | sudo tee -a /boot/firmware/usercfg.txt
 sudo sed -i '${s/$/ modules-load=dwc2,g_ether/}' /boot/firmware/cmdline.txt
 
 # Enable i2c-3
 echo "dtoverlay=i2c-gpio,bus=3,i2c_gpio_delay_us=1,i2c_gpio_sda=4,i2c_gpio_scl=5" | sudo tee -a /boot/firmware/usercfg.txt 
+
+# Source galactic setup in bashrc
+echo "source /opt/ros/galactic/setup.bash" | sudo tee -a ~/.bashrc
 
 # Configure cyclonedds
 sudo cp $SETUP_DIR/conf/cyclonedds_rpi.xml /etc/
@@ -97,9 +107,6 @@ echo "export CYCLONEDDS_URI=/etc/cyclonedds_rpi.xml" | sudo tee -a ~/.bashrc
 
 # Set ROS_DOMAIN_ID
 echo "export ROS_DOMAIN_ID=0" | sudo tee -a ~/.bashrc
-
-# Source galactic setup in bashrc
-echo "source /opt/ros/galactic/setup.bash" | sudo tee -a ~/.bashrc
 
 # Robot upstart
 $SCRIPT_DIR/install.py $model
