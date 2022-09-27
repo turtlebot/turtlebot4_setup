@@ -1,0 +1,12 @@
+[Unit]
+Description=Create 3 Webserver forwarding service
+After=network.target
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+ExecStart=/usr/bin/socat TCP-LISTEN:8080,fork,reuseaddr tcp:192.168.186.2:80
+
+[Install]
+WantedBy=multi-user.target
