@@ -24,7 +24,6 @@ import robot_upstart
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('model', type=str)
 parser.add_argument('--domain', type=int, default=0)
 parser.add_argument('--rmw', type=str, default='rmw_cyclonedds_cpp')
 parser.add_argument('--workspace', type=str, default='/opt/ros/galactic/setup.bash')
@@ -32,12 +31,16 @@ parser.add_argument('--discovery', type=str, default='off')
 
 args = parser.parse_args()
 
-if args.model != 'lite' and args.model != 'standard':
-    print('Invalid model: {0}'.format(args.model))
-    parser.print_help()
-    sys.exit(1)
+model = 'standard'
 
-model = args.model
+try:
+    with open('/etc/turtlebot4') as f:
+        info = f.readline()
+        if 'lite' in info:
+            model = 'lite'
+except FileNotFoundError:
+    pass
+
 
 domain_id = 0
 if (args.domain >= 0 and args.domain <= 101) or \
@@ -91,9 +94,9 @@ class TurtleBot4Extras(robot_upstart.providers.Generic):
         pass
 
     def generate_install(self):
-        with open('/etc/discovery/discovery.conf') as f:
+        with open('/etc/turtlebot4_discovery/discovery.conf') as f:
             discovery_conf_contents = f.read()
-        with open('/etc/discovery/discovery.sh') as f:
+        with open('/etc/turtlebot4_discovery/discovery.sh') as f:
             discovery_sh_contents = f.read()
         return {
             "/lib/systemd/system/discovery.service": {
