@@ -105,6 +105,10 @@ sudo cp $SETUP_DIR/conf/cyclonedds_rpi.xml /etc/
 echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" | sudo tee -a ~/.bashrc
 echo "export CYCLONEDDS_URI=/etc/cyclonedds_rpi.xml" | sudo tee -a ~/.bashrc
 
+# Copy discovery server files
+sudo cp $SETUP_DIR/conf/discovery.conf /etc/
+sudo cp $SETUP_DIR/scripts/discovery.sh /etc/
+
 # Set ROS_DOMAIN_ID
 echo "export ROS_DOMAIN_ID=0" | sudo tee -a ~/.bashrc
 
@@ -126,7 +130,7 @@ sudo cp $SCRIPT_DIR/wifi.sh \
 
 # Set image information
 sudo touch /etc/turtlebot4
-echo "TurtleBot 4 $model v0.1.3" | sudo tee /etc/turtlebot4
+echo "TurtleBot 4 $model v0.1.4" | sudo tee /etc/turtlebot4
 
 echo "Installation complete, press enter to reboot in AP mode."
 
