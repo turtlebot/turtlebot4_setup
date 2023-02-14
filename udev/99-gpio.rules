@@ -1,0 +1,4 @@
+SUBSYSTEM=="bcm2835-gpiomem", KERNEL=="gpiomem", GROUP="dialout", MODE="0660"
+SUBSYSTEM=="i2c-dev", KERNEL=="i2c*", GROUP="dialout", MODE="0666"
+SUBSYSTEM=="spidev", KERNEL=="spidev*", GROUP="dialout", MODE="0660"
+SUBSYSTEM=="gpio", KERNEL=="gpiochip*", GROUP="dialout", MODE="0666"

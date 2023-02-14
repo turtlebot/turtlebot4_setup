@@ -15,9 +15,11 @@
 #
 # @author Roni Kreinin (rkreinin@clearpathrobotics.com)
 
+import os
+
 import robot_upstart
 
 turtlebot4_job = robot_upstart.Job(name='turtlebot4',
-                                   workspace_setup='/opt/ros/galactic/setup.bash')
+                                   workspace_setup=os.environ['ROBOT_SETUP'])
 
 turtlebot4_job.uninstall()

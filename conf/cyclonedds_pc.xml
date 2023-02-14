@@ -1,7 +1,0 @@
-<CycloneDDS>
-    <Domain>
-        <General>
-            <DontRoute>true</DontRoute>
-        </General>
-    </Domain>
-</CycloneDDS>

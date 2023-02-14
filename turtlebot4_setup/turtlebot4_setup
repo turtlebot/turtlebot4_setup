@@ -1,0 +1,224 @@
+#!/usr/bin/env python3
+
+import copy
+import os
+import subprocess
+import shlex
+
+from turtlebot4_setup.wifi import WifiSetup
+from turtlebot4_setup.menu import Menu, MenuEntry, OptionsMenu, Prompt, HelpMenu, PreviewMenu
+from turtlebot4_setup.ros_setup import RosSetup
+from turtlebot4_setup.conf import Conf, SystemOptions, BashOptions, WifiOptions, DiscoveryOptions
+
+
+class Turtlebot4Setup():
+    title = """
+  _____         _   _     ___      _   _ _    ___      _ 
+ |_   _|  _ _ _| |_| |___| _ ) ___| |_| | |  / __| ___| |_ _  _ _ __
+   | || || | '_|  _| / -_) _ \/ _ \  _|_  _| \__ \/ -_)  _| || | '_ \\
+   |_| \_,_|_|  \__|_\___|___/\___/\__| |_|  |___/\___|\__|\_,_| .__/
+                                                               |_|
+"""
+
+    def __init__(self) -> None:
+        self.conf = Conf()
+        self.initial_conf = copy.deepcopy(self.conf)
+        self.wifi = WifiSetup(self.conf)
+        self.ros = RosSetup(self.conf)
+        self.entries = [MenuEntry(entry='ROS Setup', function=self.ros.show),
+                        MenuEntry(entry='Wi-Fi Setup', function=self.wifi.run),
+                        MenuEntry(entry='Bluetooth Setup', function=self.bluetooth),
+                        MenuEntry('', None),
+                        MenuEntry(entry='View Settings', function=self.view_settings),
+                        MenuEntry(entry='Apply Settings', function=self.apply_settings),
+                        MenuEntry('', None),
+                        MenuEntry(entry='About', function=self.about),
+                        MenuEntry(entry='Help', function=self.help),
+                        MenuEntry(entry='Exit', function=self.exit)]
+        self.menu = Menu(self.title, self.entries)
+
+    def bluetooth(self):
+        subprocess.run(shlex.split('sudo bluetoothctl'))
+
+    def update(self):
+        o = OptionsMenu('Update TurtleBot4 Packages?.\n',
+                      ['Yes', 'No'], default_option='No')
+
+        if o.show() == 'Yes':
+            subprocess.run(shlex.split('sudo apt update'))
+            subprocess.run(shlex.split('sudo apt install ros-humble-turtlebot4-setup'))
+            input()
+
+    def view_settings(self):
+        PreviewMenu([self.conf.setup_dir, self.conf.netplan_dir]).show()
+
+    def get_settings_diff(self, options):
+        diff = []
+
+        if options is SystemOptions or \
+           options is BashOptions or \
+           options is WifiOptions or \
+           options is DiscoveryOptions:
+            for option in options:
+                # None and empty string are equivalent
+                if self.conf.get(option) == '' and self.initial_conf.get(option) == None or \
+                   self.conf.get(option) == None and self.initial_conf.get(option) == '':
+                    pass
+                elif (self.conf.get(option) != self.initial_conf.get(option)):
+                    diff.append(option)
+
+        return diff
+
+    def settings_diff(self):
+        text = ''
+
+        diff = self.get_settings_diff(SystemOptions)
+        if len(diff) > 0:
+            text += '\nSystem Settings:\n'
+            for option in diff:
+                text += '  {0}: {1} -> {2}\n'.format(
+                    option.value, self.initial_conf.get(option), self.conf.get(option))
+
+        diff = self.get_settings_diff(BashOptions)
+        if len(diff) > 0:
+            text += '\nBash Settings:\n'
+            for option in diff:
+                text += '  {0}: {1} -> {2}\n'.format(
+                    option.value, self.initial_conf.get(option), self.conf.get(option))
+
+        diff = self.get_settings_diff(WifiOptions)
+        if len(diff) > 0:
+            text += '\nWi-Fi Settings:\n'
+            for option in diff:
+                text += '  {0}: {1} -> {2}\n'.format(
+                    option.value, self.initial_conf.get(option), self.conf.get(option))
+
+        diff = self.get_settings_diff(DiscoveryOptions)
+        if len(diff) > 0:
+            text += '\nDiscovery Server Settings:\n'
+            for option in diff:
+                text += '  {0}: {1} -> {2}\n'.format(
+                    option.value, self.initial_conf.get(option), self.conf.get(option))
+
+        if text == '':
+            text = 'No changes made.\n'
+        text = """
+    _             _        ___      _   _   _              
+   /_\  _ __ _ __| |_  _  / __| ___| |_| |_(_)_ _  __ _ ___
+  / _ \| '_ \ '_ \ | || | \__ \/ -_)  _|  _| | ' \/ _` (_-<
+ /_/ \_\ .__/ .__/_|\_, | |___/\___|\__|\__|_|_||_\__, /__/
+       |_|  |_|     |__/                          |___/    \n\n""" + text
+
+        text += '\nApply these settings?\n'
+
+        text += '\n**Notes**\n'
+        text += '- Changes applied to ROS_DOMAIN_ID, ROBOT_NAMESPACE or RMW_IMPLEMENTATION will be applied to the Create 3 as well.\n'
+        text += '- Changes applied to Wi-Fi will cause SSH sessions to hang.\n'
+
+        return text
+
+    def apply_settings(self):
+        apply_menu = OptionsMenu(self.settings_diff, ['Yes', 'No'], default_option='No')
+        if apply_menu.show() == 'Yes':
+            self.apply_ros_settings()
+            self.apply_wifi_settings()
+            self.initial_conf = copy.deepcopy(self.conf)
+
+    def apply_ros_settings(self):
+        reinstall_job = False
+        restart_create3 = False
+
+        # If one of Domain ID, Namespace, or RMW was changed, apply changes to Create 3
+        for option in self.get_settings_diff(BashOptions):
+            if option in [BashOptions.DOMAIN_ID, BashOptions.NAMESPACE, BashOptions.RMW]:
+                restart_create3 = True
+            reinstall_job = True
+
+        if len(self.get_settings_diff(DiscoveryOptions)) > 0:
+            restart_create3 = True
+            reinstall_job = True
+
+        for option in self.get_settings_diff(SystemOptions):
+            if option is SystemOptions.MODEL:
+                reinstall_job = True
+
+        if restart_create3:
+            subprocess.run(shlex.split(
+                'curl -d \"ros_domain_id={0}&ros_namespace={1}&rmw_implementation={2}&fast_discovery_server_value={3}{4}\"'.format(
+                    os.environ['ROS_DOMAIN_ID'],
+                    os.environ['ROBOT_NAMESPACE'],
+                    os.environ['RMW_IMPLEMENTATION'],
+                    '192.168.186.3:11811',
+                    'fast_discovery_server_enabled' if self.conf.get(DiscoveryOptions.ENABLED) else '')) +
+                shlex.split('-X POST http://192.168.186.2/ros-config-save-main -o /dev/null'))
+
+            subprocess.run(shlex.split(
+                'curl -X POST http://192.168.186.2/api/reboot'))
+
+        if reinstall_job:
+            self.ros.robot_upstart_menu.install()
+            self.ros.robot_upstart_menu.start()
+
+    def apply_wifi_settings(self):
+        # Run netplan apply if WiFi options have changed
+        if len(self.get_settings_diff(WifiOptions)) > 0:
+            subprocess.run(shlex.split('sudo netplan apply && sudo reboot'))
+
+    def run(self):
+        self.menu.show()
+        self.initial_conf.write()
+
+    def exit(self):
+        self.menu.exit()
+        self.initial_conf.write()
+
+    def about(self):
+        about_menu = Menu(lambda:
+"""
+TurtleBot 4 Open Source Robotics Platform.
+
+Model: {0}
+Version: {1}
+ROS: {2}
+Hostname: {3}
+IP: {4}
+The TurtleBot 4 was created in a partnership between Open Robotics and Clearpath Robotics.
+""".format(self.conf.get(SystemOptions.MODEL),
+           self.conf.get(SystemOptions.VERSION),
+           self.conf.get(SystemOptions.ROS),
+           self.conf.get(SystemOptions.HOSTNAME),
+           self.conf.get(SystemOptions.IP)),
+           [MenuEntry(entry='Model', function=self.set_model),
+            MenuEntry(entry='Hostname', function=self.set_hostname),
+            MenuEntry('', None),
+            MenuEntry(entry='Save', function=self.conf.write)])
+        about_menu.show()
+        about_menu.refresh_term_menu()
+
+    def set_model(self):
+        o = OptionsMenu('TurtleBot 4 Model\n',
+                        ['standard', 'lite'],
+                        default_option=self.conf.get(SystemOptions.MODEL))
+
+        self.conf.set(SystemOptions.MODEL, o.show())
+
+    def set_hostname(self):
+        p = Prompt(prompt='Hostname [{0}]: '.format(self.conf.get(SystemOptions.HOSTNAME)),
+                   default_response=self.conf.get(SystemOptions.HOSTNAME),
+                   note='RPi4 Hostname')
+        self.conf.set(SystemOptions.HOSTNAME, p.show())
+
+    def help(self):
+        help_menu = HelpMenu(
+            'Visit the TurtleBot 4 User Manual for more details on usage. \n' +
+            'https://turtlebot.github.io/turtlebot4-user-manual/')
+        help_menu.show()
+
+
+def main():
+    setup = Turtlebot4Setup()
+    setup.run()
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,11 @@
+<CycloneDDS>
+    <Domain>
+        <General>
+            <Interfaces>
+                <NetworkInterface name="wlan0" priority="default" multicast="default"/>
+                <!--NetworkInterface name="usb0" priority="default" multicast="default"/-->
+            </Interfaces>
+            <DontRoute>true</DontRoute>
+        </General>
+    </Domain>
+</CycloneDDS>

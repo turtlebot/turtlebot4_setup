@@ -16,17 +16,14 @@
 # @author Roni Kreinin (rkreinin@clearpathrobotics.com)
 
 import argparse
-
+import os
 import sys
 
 import robot_upstart
 
-
 parser = argparse.ArgumentParser()
 
 parser.add_argument('model', type=str)
-parser.add_argument('--domain', type=int, default=0)
-parser.add_argument('--rmw', type=str, default='rmw_cyclonedds_cpp')
 
 args = parser.parse_args()
 
@@ -36,35 +33,21 @@ if args.model != 'lite' and args.model != 'standard':
     sys.exit(1)
 
 model = args.model
-
-domain_id = 0
-if (args.domain >= 0 and args.domain <= 101) or \
-   (args.domain >= 215 and args.domain <= 232):
-    domain_id = args.domain
-else:
-    print('Invalid ROS_DOMAIN_ID: {0}'.format(args.domain))
-    parser.print_help()
-    sys.exit(2)
-
-rmw = 'rmw_cyclonedds_cpp'
-if args.rmw == 'rmw_fastrtps_cpp' or args.rmw == 'rmw_cyclonedds_cpp':
-    rmw = args.rmw
-else:
-    print('Invalid RMW {0}'.format(args.rmw))
-    parser.print_help()
-    sys.exit(3)
+domain_id = os.environ['ROS_DOMAIN_ID'] or 0
+rmw = os.environ['RMW_IMPLEMENTATION'] or 'rmw_fastrtps_cpp'
+workspace = os.environ['ROBOT_SETUP'] or '/opt/ros/humble/setup.bash'
 
 print('Installing TurtleBot 4 {0}. ROS_DOMAIN_ID={1}, RMW_IMPLEMENTATION={2}'.format(model, domain_id, rmw))
 
 if rmw == 'rmw_cyclonedds_cpp':
-    rmw_config = '/etc/cyclonedds_rpi.xml'
+    rmw_config = os.environ['CYCLONEDDS_URI']
 else:
-    rmw_config = None
+    rmw_config = os.environ['FASTRTPS_DEFAULT_PROFILES_FILE']
 
 turtlebot4_job = robot_upstart.Job(name='turtlebot4',
                                    rmw=rmw,
                                    rmw_config=rmw_config,
-                                   workspace_setup='/opt/ros/galactic/setup.bash',
+                                   workspace_setup=workspace,
                                    ros_domain_id=domain_id)
 
 turtlebot4_job.symlink = True

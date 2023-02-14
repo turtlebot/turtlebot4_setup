@@ -5,9 +5,9 @@
 
 Help()
 {
-   echo "TurtleBot 4 Configure Create 3"
+   echo "TurtleBot 4 ROS configuration"
    echo
-   echo "usage: sudo bash create_config.sh [-h]"
+   echo "usage: sudo bash ros_config.sh [-h]"
    echo "options:"
    echo " -h     Print this help statement"
    echo
@@ -28,8 +28,8 @@ done
 read -p "ROS_DOMAIN_ID (default 0): " ros_domain_id
 ros_domain_id=${ros_domain_id:-0}
 #read -p "ROS namespace (default empty): " namespace
-read -p "RMW Implementation [rmw_cyclonedds_cpp,rmw_fastrtps_cpp] (default rmw_cyclonedds_cpp): " rmw
-rmw=${rmw:-rmw_cyclonedds_cpp}
+read -p "RMW Implementation [rmw_cyclonedds_cpp,rmw_fastrtps_cpp] (default rmw_fastrtps_cpp): " rmw
+rmw=${rmw:-rmw_fastrtps_cpp}
 
 echo "ROS_DOMAIN_ID: $ros_domain_id";
 #echo "Namespace: $namespace";

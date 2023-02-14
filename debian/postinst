@@ -1,0 +1,16 @@
+#!/bin/bash -e
+
+PKG="turtlebot4_setup"
+
+sudo service chrony restart
+sudo systemctl enable webserver.service
+
+# Remove old/new dpkg configs
+sudo rm -f /etc/turtlebot4/*.dpkg-new
+sudo rm -f /etc/turtlebot4/*.dpkg-old
+sudo rm -f /etc/netplan/*.dpkg-new
+sudo rm -f /etc/netplan/*.dpkg-old
+sudo rm -f /etc/chrony/*.dpkg-new
+sudo rm -f /etc/chrony/*.dpkg-old
+
+#DEBHELPER#

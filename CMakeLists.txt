@@ -7,10 +7,13 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
+
+ament_python_install_package(${PROJECT_NAME})
 
 install(
-  DIRECTORY scripts udev
-  DESTINATION share/${PROJECT_NAME}
+  PROGRAMS ${PROJECT_NAME}/turtlebot4_setup
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)

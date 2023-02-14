@@ -1,0 +1,12 @@
+network:
+    version: 2
+    wifis:
+        renderer: NetworkManager
+        wlan0:
+            access-points:
+                Turtlebot4:
+                    band: 5GHz
+                    mode: ap
+                    password: Turtlebot4
+            dhcp4: true
+            optional: true

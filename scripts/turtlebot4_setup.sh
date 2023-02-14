@@ -30,104 +30,27 @@ Help()
    echo
 }
 
-while getopts "m:c:h" flag
-do
-    case "${flag}" in
-        m) model=${OPTARG};;
-        h)
-            Help
-            exit;;
-        \?)
-            echo "Error: Invalid flag"
-            exit;;
-    esac
-done
-
-# Check that the model is valid
-if [ -z $model ]
-then
-    model="standard";
-else
-    if [ $model != "standard" ] && [ $model != "lite" ]
-    then
-        echo "Invalid model";
-        exit 1
-    fi
-fi
 
 echo "Setting up Turtlebot4 $model";
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 SETUP_DIR=${SCRIPT_DIR%/*}
 
-# Install ROS2 Galactic
-bash $SCRIPT_DIR/galactic.sh
-source /opt/ros/galactic/setup.bash
+sudo apt update && sudo apt upgrade
+sudo apt install software-properties-common curl
+sudo add-apt-repository universe
+sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2-testing/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+sudo apt update && sudo apt upgrade
+sudo apt install -y ros-humble-ros-base ros-dev-tools socat network-manager chrony
+#sudo apt install -y ros-humble-turtlebot4-setup ros-humble-turtlebot4-robot
+sudo rm /etc/netplan/50-cloud-init.yaml
+git clone https://github.com/turtlebot/turtlebot4_setup.git -b humble && \
+sudo mv turtlebot4_setup/boot/firmware/* /boot/firmware && rm turtlebot4_setup/ -rf
+sudo sed -i "s/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g" /etc/sysctl.conf
 
-# Install packages
-sudo apt install -y \
-network-manager \
-daemontools \
-chrony \
-socat \
-ros-galactic-robot-upstart \
-ros-galactic-turtlebot4-robot \
-ros-galactic-irobot-create-control \
-ros-galactic-rmw-fastrtps-cpp
-
-# Copy udev rules
-sudo cp $SETUP_DIR/udev/turtlebot4.rules /etc/udev/rules.d/
-
-# Copy chrony config
-sudo cp $SETUP_DIR/conf/chrony.conf /etc/chrony/
-
-# Restart chrony
-sudo service chrony restart
-
-# Copy webserver service
-sudo cp $SETUP_DIR/conf/webserver.service /etc/systemd/system/
-
-# Enable webserver service to run from boot
-sudo systemctl enable webserver.service
-
-# Enable usb0
-echo "dtoverlay=dwc2,dr_mode=peripheral" | sudo tee -a /boot/firmware/usercfg.txt
-sudo sed -i '${s/$/ modules-load=dwc2,g_ether/}' /boot/firmware/cmdline.txt
-
-# Enable i2c-3
-echo "dtoverlay=i2c-gpio,bus=3,i2c_gpio_delay_us=1,i2c_gpio_sda=4,i2c_gpio_scl=5" | sudo tee -a /boot/firmware/usercfg.txt 
-
-# Source galactic setup in bashrc
-echo "source /opt/ros/galactic/setup.bash" | sudo tee -a ~/.bashrc
-
-# Configure cyclonedds
-sudo cp $SETUP_DIR/conf/cyclonedds_rpi.xml /etc/
-echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" | sudo tee -a ~/.bashrc
-echo "export CYCLONEDDS_URI=/etc/cyclonedds_rpi.xml" | sudo tee -a ~/.bashrc
-
-# Set ROS_DOMAIN_ID
-echo "export ROS_DOMAIN_ID=0" | sudo tee -a ~/.bashrc
-
-# Robot upstart
-$SCRIPT_DIR/install.py $model
-
-sudo systemctl daemon-reload
-
-# Copy scripts to local bin
-sudo cp $SCRIPT_DIR/wifi.sh \
-        $SCRIPT_DIR/create_update_0.4.0.sh \
-        $SCRIPT_DIR/create_update.sh \
-        $SCRIPT_DIR/ros_config.sh \
-        $SCRIPT_DIR/swap_on.sh \
-        $SCRIPT_DIR/swap_off.sh \
-        $SCRIPT_DIR/bluetooth.sh \
-        $SCRIPT_DIR/install.py \
-        $SCRIPT_DIR/uninstall.py /usr/local/bin
-
-# Set image information
-sudo touch /etc/turtlebot4
-echo "TurtleBot 4 $model v0.1.3" | sudo tee /etc/turtlebot4
+echo "source /etc/turtlebot4/setup.bash" | sudo tee -a ~/.bashrc
+echo "source /etc/turtlebot4/aliases.bash" | sudo tee -a ~/.bashrc
 
 echo "Installation complete, press enter to reboot in AP mode."
 
-sudo $SETUP_DIR/scripts/wifi.sh -a && sudo reboot

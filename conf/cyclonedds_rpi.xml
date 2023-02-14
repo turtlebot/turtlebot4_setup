@@ -1,7 +1,0 @@
-<CycloneDDS>
-    <Domain>
-        <General>
-            <NetworkInterfaceAddress>wlan0,usb0</NetworkInterfaceAddress>
-        </General>
-    </Domain>
-</CycloneDDS>
