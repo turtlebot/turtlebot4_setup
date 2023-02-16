@@ -143,14 +143,30 @@ class Turtlebot4Setup():
                 reinstall_job = True
 
         if restart_create3:
-            subprocess.run(shlex.split(
-                'curl -d \"ros_domain_id={0}&ros_namespace={1}&rmw_implementation={2}&fast_discovery_server_value={3}{4}\"'.format(
-                    os.environ['ROS_DOMAIN_ID'],
-                    os.environ['ROBOT_NAMESPACE'],
-                    os.environ['RMW_IMPLEMENTATION'],
-                    '192.168.186.3:11811',
-                    'fast_discovery_server_enabled' if self.conf.get(DiscoveryOptions.ENABLED) else '')) +
-                shlex.split('-X POST http://192.168.186.2/ros-config-save-main -o /dev/null'))
+            ros_domain_id = 'ros_domain_id=' + os.environ[BashOptions.DOMAIN_ID]
+            ros_namespace = '&ros_namespace=' + os.environ[BashOptions.NAMESPACE]
+            rmw_implementation = '&rmw_implementation=' + os.environ[BashOptions.RMW]
+
+            if self.conf.get(DiscoveryOptions.IP) == '127.0.0.1':
+                discovery_server = '&fast_discovery_server_value=192.168.186.3:' + self.conf.get(DiscoveryOptions.PORT)
+            else:
+                discovery_server = '&fast_discovery_server_value=' + os.environ[BashOptions.DISCOVERY_SERVER]
+
+            if self.conf.get(DiscoveryOptions.ENABLED):
+                discovery_server_enabled = '&fast_discovery_server_enabled'
+            else:
+                discovery_server_enabled = ''
+
+            command = shlex.split(
+                'curl -d \"{0}{1}{2}{3}{4}\"'.format(ros_domain_id,
+                                                     ros_namespace,
+                                                     rmw_implementation,
+                                                     discovery_server,
+                                                     discovery_server_enabled)) + \
+                shlex.split('-X POST http://192.168.186.2/ros-config-save-main -o /dev/null')
+
+            print(command)
+            subprocess.run(command)
 
             subprocess.run(shlex.split(
                 'curl -X POST http://192.168.186.2/api/reboot'))
