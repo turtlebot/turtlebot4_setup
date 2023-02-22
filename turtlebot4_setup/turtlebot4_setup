@@ -112,7 +112,8 @@ class Turtlebot4Setup():
         text += '\nApply these settings?\n'
 
         text += '\n**Notes**\n'
-        text += '- Changes applied to ROS_DOMAIN_ID, ROBOT_NAMESPACE or RMW_IMPLEMENTATION will be applied to the Create 3 as well.\n'
+        text += '- Changes applied to ROS_DOMAIN_ID, ROBOT_NAMESPACE, RMW_IMPLEMENTATION,\n'
+        text += '  or ROS_DISCOVERY_SERVER  will be applied to the Create 3 as well.\n'
         text += '- Changes applied to Wi-Fi will cause SSH sessions to hang.\n'
 
         return text
@@ -126,23 +127,23 @@ class Turtlebot4Setup():
 
     def apply_ros_settings(self):
         reinstall_job = False
-        restart_create3 = False
+        update_create3 = False
 
         # If one of Domain ID, Namespace, or RMW was changed, apply changes to Create 3
         for option in self.get_settings_diff(BashOptions):
             if option in [BashOptions.DOMAIN_ID, BashOptions.NAMESPACE, BashOptions.RMW]:
-                restart_create3 = True
+                update_create3 = True
             reinstall_job = True
 
         if len(self.get_settings_diff(DiscoveryOptions)) > 0:
-            restart_create3 = True
+            update_create3 = True
             reinstall_job = True
 
         for option in self.get_settings_diff(SystemOptions):
             if option is SystemOptions.MODEL:
                 reinstall_job = True
 
-        if restart_create3:
+        if update_create3:
             ros_domain_id = 'ros_domain_id=' + os.environ[BashOptions.DOMAIN_ID]
             ros_namespace = '&ros_namespace=' + os.environ[BashOptions.NAMESPACE]
             rmw_implementation = '&rmw_implementation=' + os.environ[BashOptions.RMW]

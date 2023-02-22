@@ -282,7 +282,7 @@ class RobotUpstart():
                             self.conf.get(SystemOptions.MODEL)))
         turtlebot4_job.install()
 
-        if self.conf.get(DiscoveryOptions.ENABLED):
+        if self.conf.get(DiscoveryOptions.ENABLED) and self.conf.get(DiscoveryOptions.IP) == '127.0.0.1':
             discovery_job = robot_upstart.Job(workspace_setup=os.environ['ROBOT_SETUP'])
             discovery_job.install(Provider=TurtleBot4Extras)
             subprocess.run(shlex.split('sudo systemctl start discovery.service'))
