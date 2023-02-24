@@ -179,7 +179,8 @@ class Turtlebot4Setup():
     def apply_wifi_settings(self):
         # Run netplan apply if WiFi options have changed
         if len(self.get_settings_diff(WifiOptions)) > 0:
-            subprocess.run(shlex.split('sudo netplan apply && sudo reboot'))
+            subprocess.run(shlex.split('sudo netplan apply'))
+            os.system('sudo reboot')
 
     def run(self):
         self.menu.show()

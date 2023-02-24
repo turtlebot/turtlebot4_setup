@@ -84,6 +84,7 @@ class Conf():
         self.system_file = os.path.join(self.setup_dir, 'system')
         self.setup_bash_file = os.path.join(self.setup_dir, 'setup.bash')
         self.netplan_wifis_file = os.path.join(self.netplan_dir, '50-wifis.yaml')
+        self.discovery_sh_file = os.path.join(self.setup_dir, 'discovery.sh')
         self.hostname_file = '/etc/hostname'
 
         self.system_conf = copy.deepcopy(self.default_system_conf)
@@ -315,6 +316,20 @@ class Conf():
                 self.get(DiscoveryOptions.PORT)))
             self.set(BashOptions.RMW, 'rmw_fastrtps_cpp')
             self.set(BashOptions.FASTRTPS_URI, self.setup_dir + 'fastdds_discovery_super_client.xml')
+
+            # If Raspberry Pi is the discovery server, set the port in discovery.sh
+            if self.get(DiscoveryOptions.IP) == '127.0.0.1':
+                discovery_sh = []
+                with open(self.discovery_sh_file, 'r') as f:
+                    discovery_sh = f.readlines()
+                    for i, line in enumerate(discovery_sh):
+                        if 'fastdds' in line:
+                            discovery_sh[i] = 'fastdds discovery -i 0 -l 127.0.0.1 -p {0}'.format(
+                                self.get(DiscoveryOptions.PORT))
+
+                with open('/tmp' + self.discovery_sh_file, 'w') as f:
+                    f.writelines(discovery_sh)
+                    subprocess.run(shlex.split('sudo mv /tmp' + self.discovery_sh_file + ' ' + self.discovery_sh_file))
         else:
             self.set(BashOptions.DISCOVERY_SERVER, None)
 
