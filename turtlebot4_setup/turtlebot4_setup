@@ -166,7 +166,7 @@ class Turtlebot4Setup():
                                                      discovery_server_enabled)) + \
                 shlex.split('-X POST http://192.168.186.2/ros-config-save-main -o /dev/null')
 
-            print(command)
+            #print(command)
             subprocess.run(command)
 
             subprocess.run(shlex.split(
