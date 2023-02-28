@@ -22,7 +22,7 @@ sudo fdisk -l
 
 - Get the SD flash script and flash the SD card
 ```bash
-wget https://raw.githubusercontent.com/turtlebot/turtlebot4-images/galactic/turtlebot4_setup/scripts/sd_flash.sh
+wget https://raw.githubusercontent.com/turtlebot/turtlebot4_setup/humble/scripts/sd_flash.sh
 bash sd_flash.sh /path/to/image
 ```
 - Follow the instructions and wait for the SD card to be flashed.
@@ -39,7 +39,7 @@ Follow these instructions if you wish to create a Turtlebot4 image manually.
 
 First install the [Raspberry Pi Imager](https://www.raspberrypi.com/software/).
 
-- Insert your SD card into your PC and run the Raspberry Pi Imager. Follow the instructions and install Ubuntu 20.04 LTS onto the SD card.
+- Insert your SD card into your PC and run the Raspberry Pi Imager. Follow the instructions and install Ubuntu 22.04 LTS onto the SD card.
 - Ensure your Raspberry Pi 4 is not powered before inserting the flashed SD card. 
 - You can set up the Raspberry Pi by either connecting it to your network via Ethernet or by using a keyboard and HDMI monitor via a micro HDMI cable.
 
@@ -118,9 +118,9 @@ bash src/turtlebot4_robot/turtlebot4_setup/scripts/turtlebot4_setup.sh -m lite
 
 If you wish to manually setup the workspace, follow these instructions.
 
-### Install ROS2 Galactic
+### Install ROS2 Humble
 
-Follow https://docs.ros.org/en/galactic/Installation/Ubuntu-Install-Debians.html and install ros-galactic-ros-base
+Follow https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html and install ros-humble-ros-base
 
 ### Install ROS tools
 
@@ -173,12 +173,12 @@ Follow https://github.com/luxonis/depthai-ros/tree/main#install-dependencies
 cd ~/turtlebot4_ws
 sudo rosdep init
 rosdep update
-rosdep install -r --from-paths src -i -y --rosdistro galactic
+rosdep install -r --from-paths src -i -y --rosdistro humble
 ```
 
 ### Build workspace
 ```
-source /opt/ros/galactic/setup.bash
+source /opt/ros/humble/setup.bash
 cd ~/turtlebot4_ws
 colcon build
 source install/setup.bash
