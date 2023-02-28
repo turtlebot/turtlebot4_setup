@@ -11,10 +11,3 @@ jobs:
       - uses: ros-tooling/setup-ros@v0.3
         with:
           required-ros-distributions: humble
-      - uses: ros-tooling/action-ros-ci@v0.2
-        id: action_ros_ci_step
-        with:
-          target-ros2-distro: humble
-          import-token: ${{ secrets.GITHUB_TOKEN }}
-          package-name:
-            turtlebot4_setup
