@@ -2,6 +2,11 @@
 Changelog for package turtlebot4_setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed script install path
+* Contributors: Roni Kreinin
+
 1.0.0 (2023-02-24)
 ------------------
 * turtlebot4_setup tool
