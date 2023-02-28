@@ -1,3 +1,3 @@
-scripts/* /usr/local/bin/
+scripts/* /usr/bin/
 udev/*.rules /etc/udev/rules.d/
 etc/* /etc/
