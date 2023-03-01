@@ -209,7 +209,7 @@ The TurtleBot 4 was created in a partnership between Open Robotics and Clearpath
            [MenuEntry(entry='Model', function=self.set_model),
             MenuEntry(entry='Hostname', function=self.set_hostname),
             MenuEntry('', None),
-            MenuEntry(entry='Save', function=self.conf.write)])
+            MenuEntry(entry='Save', function=self.save)])
         about_menu.show()
         about_menu.refresh_term_menu()
 
@@ -225,6 +225,10 @@ The TurtleBot 4 was created in a partnership between Open Robotics and Clearpath
                    default_response=self.conf.get(SystemOptions.HOSTNAME),
                    note='RPi4 Hostname')
         self.conf.set(SystemOptions.HOSTNAME, p.show())
+
+    def save(self):
+        self.conf.write()
+        self.menu.exit()
 
     def help(self):
         help_menu = HelpMenu(

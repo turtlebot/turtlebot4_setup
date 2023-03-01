@@ -2,6 +2,7 @@
 <dds>
     <profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
         <participant profile_name="turtlebot4_default_profile" is_default_profile="true">
+            <rtps/>
         </participant>
     </profiles>
 </dds>

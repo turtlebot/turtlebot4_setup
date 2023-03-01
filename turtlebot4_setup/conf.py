@@ -69,7 +69,7 @@ class Conf():
         BashOptions.NAMESPACE: None,
         BashOptions.DOMAIN_ID: 0,
         BashOptions.DISCOVERY_SERVER: None,
-        BashOptions.RMW: 'rmw_cyclonedds_cpp',
+        BashOptions.RMW: 'rmw_fastrtps_cpp',
         BashOptions.DIAGNOSTICS: '1',
         BashOptions.WORKSPACE: '/opt/ros/humble/setup.bash',
     }
@@ -324,7 +324,7 @@ class Conf():
                     discovery_sh = f.readlines()
                     for i, line in enumerate(discovery_sh):
                         if 'fastdds' in line:
-                            discovery_sh[i] = 'fastdds discovery -i 0 -l 127.0.0.1 -p {0}'.format(
+                            discovery_sh[i] = 'fastdds discovery -i 0 -p {0}'.format(
                                 self.get(DiscoveryOptions.PORT))
 
                 with open('/tmp' + self.discovery_sh_file, 'w') as f:
