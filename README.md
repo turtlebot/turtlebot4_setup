@@ -12,7 +12,7 @@ Follow these instructions if you wish to create a Turtlebot4 image manually.
 
 First install the [Raspberry Pi Imager](https://www.raspberrypi.com/software/).
 
-- Insert your SD card into your PC and run the Raspberry Pi Imager. Follow the instructions and install Ubuntu 20.04 LTS onto the SD card.
+- Insert your SD card into your PC and run the Raspberry Pi Imager. Follow the instructions and install Ubuntu 22.04 Server (64-bit) onto the SD card.
 - Ensure your Raspberry Pi 4 is not powered before inserting the flashed SD card. 
 - You can set up the Raspberry Pi by either connecting it to your network via Ethernet or by using a keyboard and HDMI monitor via a micro HDMI cable.
 
