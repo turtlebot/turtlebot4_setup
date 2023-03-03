@@ -1,35 +1,8 @@
 # Turtlebot4 Setup
 
-Setup scripts for the TurtleBot 4 Raspberry Pi.
+Setup scripts and tools for the TurtleBot 4 Raspberry Pi.
 
-# Install or update pre-built image
-
-Every Turtlebot4 comes with a SD card with a pre-installed Turtlebot4 image. If you wish to install an image on your own SD card or update to a newer image, follow these instructions. 
-
-- Download the [latest turtlebot4 image](http://download.ros.org/downloads/turtlebot4/).
-
-- Install the imaging tool dcfldd
-```bash
-sudo apt install dcfldd
-```
-
-- Insert your SD card into your PC and identify it:
-
-```bash
-sudo fdisk -l
-```
-- The SD card will have a name like `/dev/mmcblk0` or `/dev/sda`
-
-- Get the SD flash script and flash the SD card
-```bash
-wget https://raw.githubusercontent.com/turtlebot/turtlebot4-images/galactic/turtlebot4_setup/scripts/sd_flash.sh
-bash sd_flash.sh /path/to/image
-```
-- Follow the instructions and wait for the SD card to be flashed.
-
-- Ensure your Raspberry Pi 4 is not powered before inserting the flashed SD card. 
-
-- Follow [Wi-Fi Setup](https://github.com/turtlebot/turtlebot4_robot#rpi4-wifi-setup) to configure your Wi-Fi.
+Visit the [TurtleBot 4 User Manual](https://turtlebot.github.io/turtlebot4-user-manual/software/turtlebot4_setup.html) for more details.
 
 # Create an image manually
 
@@ -62,6 +35,7 @@ ssh ubuntu@xxx.xxx.xxx.xxx
 - The default login is `ubuntu` and password is `ubuntu`. You will be prompted to change your password.
 
 ## Manually configure Wi-Fi
+
 Once you are logged into the Raspberry Pi, configure the Wi-Fi:
 
 ```bash
@@ -85,151 +59,10 @@ Note: Ensure that `wifis:` is aligned with the existing `ethernets:` line. All i
 ssh ubuntu@xxx.xxx.xxx.xxx
 ```
 
-## Create your workspace
-
-- Once logged in, create a workspace.
-```bash
-mkdir ~/turtlebot4_ws/src -p
-```
-- Clone this repository into the src folder
-```bash
-cd ~/turtlebot4_ws/src
-git clone https://github.com/turtlebot/turtlebot4_setup.git
-```
-
-## Automatic Setup
-- Run the `turtlebot4_setup.sh` script to automatically set up your turtlebot4.
-
-### Turtlebot4 Standard
-```bash
-cd ~/turtlebot4_ws
-bash src/turtlebot4_robot/turtlebot4_setup/scripts/turtlebot4_setup.sh -m standard
-```
-
-### Turtlebot4 Lite
-```bash
-cd ~/turtlebot4_ws
-bash src/turtlebot4_robot/turtlebot4_setup/scripts/turtlebot4_setup.sh -m lite
-```
-
-- Run [Wi-Fi Setup](https://github.com/turtlebot/turtlebot4_robot#rpi4-wifi-setup) to enable the 5G Wi-Fi band.
-
-## Manual Setup
-
-If you wish to manually setup the workspace, follow these instructions.
-
-### Install ROS2 Galactic
-
-Follow https://docs.ros.org/en/galactic/Installation/Ubuntu-Install-Debians.html and install ros-galactic-ros-base
-
-### Install ROS tools
-
-```bash
-sudo apt update && sudo apt install -y \
-  build-essential \
-  cmake \
-  git \
-  python3-colcon-common-extensions \
-  python3-flake8 \
-  python3-pip \
-  python3-pytest-cov \
-  python3-rosdep \
-  python3-setuptools \
-  python3-vcstool \
-  wget
-```
-
-### Install additional packages
-
-```bash
-sudo apt install -y \
-libgpiod-dev \
-network-manager \
-daemontools 
-```
-
-### Install bluetooth packages if needed
-```bash
-sudo apt install -y \
-bluez \
-bluez-tools \
-pi-bluetooth
-```
-
-### Import source packages
+## Download and run the setup script
 
 ```
-cd ~/turtlebot4_ws
-vcs import src < src/turtlebot4-images/turtlebot4_setup/turtlebot4_packages.repos
+wget -qO - https://raw.githubusercontent.com/turtlebot/turtlebot4_setup/humble/scripts/turtlebot4_setup.sh | bash
 ```
 
-### Install OAK-D camera dependencies
-
-Follow https://github.com/luxonis/depthai-ros/tree/main#install-dependencies
-
-### Run rosdep
-
-```
-cd ~/turtlebot4_ws
-sudo rosdep init
-rosdep update
-rosdep install -r --from-paths src -i -y --rosdistro galactic
-```
-
-### Build workspace
-```
-source /opt/ros/galactic/setup.bash
-cd ~/turtlebot4_ws
-colcon build
-source install/setup.bash
-```
-
-### Apply udev rules
-
-```bash
-cd ~/turtlebot4_ws
-sudo cp src/turtlebot4_setup/turtlebot4_setup/udev/turtlebot4.rules /etc/udev/rules.d/
-```
-
-### Enable usb0
-
-```bash
-echo "dtoverlay=dwc2,dr_mode=peripheral" | sudo tee -a /boot/firmware/usercfg.txt
-sudo sed -i '${s/$/ modules-load=dwc2,g_ether/}' /boot/firmware/cmdline.txt
-```
-
-### Enable i2c-3 bus
-
-```bash
-echo "dtoverlay=i2c-gpio,bus=3,i2c_gpio_delay_us=1,i2c_gpio_sda=4,i2c_gpio_scl=5" | sudo tee -a /boot/firmware/usercfg.txt 
-```
-
-### Configure CycloneDDS
-
-```bash
-echo "export CYCLONEDDS_URI='<CycloneDDS><Domain><General><NetworkInterfaceAddress>wlan0,usb0</></></></>'" | sudo tee -a ~/.bashrc
-```
-
-### Create Turtlebot4 service to run on boot
-
-#### Turtlebot4 Standard
-
-```bash
-ros2 run robot_upstart install turtlebot4_bringup/launch/standard.launch.py --job turtlebot4
-```
-
-#### Turtlebot4 Lite
-
-```bash
-ros2 run robot_upstart install turtlebot4_bringup/launch/lite.launch.py --job turtlebot4
-```
-
-### Set up Wi-Fi
-
-Run [Wi-Fi Setup](https://github.com/turtlebot/turtlebot4_robot#rpi4-wifi-setup)
-
-### Reboot the Raspberry Pi
-
-```bash
-sudo reboot
-```
+The script will automatically install ROS 2 Humble, TurtleBot 4 packages, and other important apt packages. It will also configure the RPi4 to work in a TurtleBot 4. Once complete, the RPi4 should be rebooted with `sudo reboot`. Then, run `turtlebot4-setup` to configure the robot with the setup tool.

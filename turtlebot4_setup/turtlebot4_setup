@@ -191,7 +191,7 @@ class Turtlebot4Setup():
         self.initial_conf.write()
 
     def about(self):
-        about_menu = Menu(lambda:
+        self.about_menu = Menu(lambda:
 """
 TurtleBot 4 Open Source Robotics Platform.
 
@@ -210,8 +210,8 @@ The TurtleBot 4 was created in a partnership between Open Robotics and Clearpath
             MenuEntry(entry='Hostname', function=self.set_hostname),
             MenuEntry('', None),
             MenuEntry(entry='Save', function=self.save)])
-        about_menu.show()
-        about_menu.refresh_term_menu()
+        self.about_menu.show()
+        self.about_menu.refresh_term_menu()
 
     def set_model(self):
         o = OptionsMenu('TurtleBot 4 Model\n',
@@ -228,7 +228,7 @@ The TurtleBot 4 was created in a partnership between Open Robotics and Clearpath
 
     def save(self):
         self.conf.write()
-        self.menu.exit()
+        self.about_menu.exit()
 
     def help(self):
         help_menu = HelpMenu(
