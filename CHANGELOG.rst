@@ -2,8 +2,8 @@
 Changelog for package turtlebot4_setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.3 (2023-11-08)
+------------------
 * Cleanup <https://github.com/turtlebot/turtlebot4_setup/issues/7>
 * Remove scripts that should not be used in Humble
 * Update create_update.sh to reference Humble minimum version
