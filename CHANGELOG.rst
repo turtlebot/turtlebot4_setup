@@ -2,6 +2,16 @@
 Changelog for package turtlebot4_setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Cleanup <https://github.com/turtlebot/turtlebot4_setup/issues/7>
+* Remove scripts that should not be used in Humble
+* Update create_update.sh to reference Humble minimum version
+* Updated README
+* Updated turtlebot4_setup.sh script
+* Fixed setting robot model
+* Contributors: Hilary Luo, Roni Kreinin
+
 1.0.2 (2023-03-01)
 ------------------
 * Fixed Discovery Server IP
