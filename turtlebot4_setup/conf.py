@@ -34,6 +34,7 @@ class BashOptions(str, Enum):
     RMW = 'RMW_IMPLEMENTATION'
     DIAGNOSTICS = 'TURTLEBOT4_DIAGNOSTICS'
     WORKSPACE = 'WORKSPACE_SETUP'
+    SUPER_CLIENT = 'ROS_SUPER_CLIENT'
 
 
 class DiscoveryOptions(str, Enum):
@@ -73,6 +74,7 @@ class Conf():
         BashOptions.RMW: 'rmw_fastrtps_cpp',
         BashOptions.DIAGNOSTICS: '1',
         BashOptions.WORKSPACE: '/opt/ros/humble/setup.bash',
+        BashOptions.SUPER_CLIENT: False
     }
 
     default_discovery_conf = {
@@ -327,7 +329,7 @@ class Conf():
                 self.get(DiscoveryOptions.IP),
                 self.get(DiscoveryOptions.PORT)))
             self.set(BashOptions.RMW, 'rmw_fastrtps_cpp')
-            self.set(BashOptions.FASTRTPS_URI, self.setup_dir + 'fastdds_discovery_super_client.xml')
+            self.set(BashOptions.SUPER_CLIENT, True)
 
             # If Raspberry Pi is the discovery server, set the port in discovery.sh
             if self.get(DiscoveryOptions.IP) == '127.0.0.1':
@@ -345,6 +347,7 @@ class Conf():
                     subprocess.run(shlex.split('sudo mv /tmp' + self.discovery_sh_file + ' ' + self.discovery_sh_file))
         else:
             self.set(BashOptions.DISCOVERY_SERVER, None)
+            self.set(BashOptions.SUPER_CLIENT, False)
 
         self.write_bash()
 

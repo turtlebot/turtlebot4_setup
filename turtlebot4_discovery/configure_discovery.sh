@@ -30,14 +30,11 @@ sudo mkdir -p /etc/turtlebot4_discovery/
 git clone -b humble https://github.com/turtlebot/turtlebot4_setup.git /tmp/turtlebot4_setup/ &> /dev/null
 sudo mv /tmp/turtlebot4_setup/turtlebot4_discovery/ip_route.sh /usr/local/sbin/
 sudo mv /tmp/turtlebot4_setup/turtlebot4_discovery/ip_route.service /etc/systemd/system/
-sudo mv /tmp/turtlebot4_setup/turtlebot4_discovery/fastdds_discovery_super_client.xml /etc/turtlebot4_discovery/
 sudo mv /tmp/turtlebot4_setup/turtlebot4_discovery/setup.bash /etc/turtlebot4_discovery/
 rm /tmp/turtlebot4_setup/ -rf
 
 # Modify IP address
 sudo sed -i "s/10.42.0.1/$ip/g" /usr/local/sbin/ip_route.sh
-sudo sed -i "s/10.42.0.1/$discovery_ip/g" /etc/turtlebot4_discovery/fastdds_discovery_super_client.xml
-sudo sed -i "s/11811/$discovery_port/g" /etc/turtlebot4_discovery/fastdds_discovery_super_client.xml
 sudo sed -i "s/10.42.0.1/$discovery_ip/g" /etc/turtlebot4_discovery/setup.bash
 sudo sed -i "s/11811/$discovery_port/g" /etc/turtlebot4_discovery/setup.bash
 sudo sed -i "s/ROS_DOMAIN_ID=0/ROS_DOMAIN_ID=$domain_id/g" /etc/turtlebot4_discovery/setup.bash
