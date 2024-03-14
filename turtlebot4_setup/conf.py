@@ -40,6 +40,7 @@ class DiscoveryOptions(str, Enum):
     ENABLED = 'ENABLED'
     IP = 'IP'
     PORT = 'PORT'
+    SERVER_ID = 'SERVER_ID'
 
 
 class Conf():
@@ -78,6 +79,7 @@ class Conf():
         DiscoveryOptions.ENABLED: False,
         DiscoveryOptions.IP: '127.0.0.1',
         DiscoveryOptions.PORT: '11811',
+        DiscoveryOptions.SERVER_ID: '0',
     }
 
     def __init__(self) -> None:
@@ -304,14 +306,24 @@ class Conf():
         else:
             self.set(DiscoveryOptions.ENABLED, True)
             try:
-                self.set(DiscoveryOptions.IP, discovery_server.split(':')[0].strip('"'))
-                self.set(DiscoveryOptions.PORT, discovery_server.split(':')[1].strip('"'))
+                servers = discovery_server.split(';')
+                for i, s in enumerate(servers):
+                    s = s.strip()
+                    if s:
+                        self.set(DiscoveryOptions.SERVER_ID, i)
+                        server = s.split(':')
+                        self.set(DiscoveryOptions.IP, server[0].strip('"'))
+                        if len(server) > 1:
+                            self.set(DiscoveryOptions.PORT, server[1].strip('"'))
+                        else:
+                            self.set(DiscoveryOptions.PORT, 11811)
             except IndexError:
                 self.discovery_conf = self.default_discovery_conf
 
     def write_discovery(self):
         if self.get(DiscoveryOptions.ENABLED) is True:
-            self.set(BashOptions.DISCOVERY_SERVER, '{0}:{1}'.format(
+            self.set(BashOptions.DISCOVERY_SERVER, self.get_discovery_str(
+                self.get(DiscoveryOptions.SERVER_ID),
                 self.get(DiscoveryOptions.IP),
                 self.get(DiscoveryOptions.PORT)))
             self.set(BashOptions.RMW, 'rmw_fastrtps_cpp')
@@ -324,7 +336,8 @@ class Conf():
                     discovery_sh = f.readlines()
                     for i, line in enumerate(discovery_sh):
                         if 'fastdds' in line:
-                            discovery_sh[i] = 'fastdds discovery -i 0 -p {0}'.format(
+                            discovery_sh[i] = 'fastdds discovery -i {0} -p {1}'.format(
+                                self.get(DiscoveryOptions.SERVER_ID),
                                 self.get(DiscoveryOptions.PORT))
 
                 with open('/tmp' + self.discovery_sh_file, 'w') as f:
@@ -334,3 +347,11 @@ class Conf():
             self.set(BashOptions.DISCOVERY_SERVER, None)
 
         self.write_bash()
+
+    @staticmethod
+    def get_discovery_str(server_id, ip, port) -> str:
+        discovery_str = ''
+        for i in range(int(server_id)):
+            discovery_str += ';'
+        discovery_str += f'{ip}:{port}'
+        return discovery_str
