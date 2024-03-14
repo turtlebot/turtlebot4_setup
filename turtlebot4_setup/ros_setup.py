@@ -170,6 +170,8 @@ class DiscoveryServer():
                                   function=self.set_ip),
                         MenuEntry(entry=self.format_entry('Port', DiscoveryOptions.PORT),
                                   function=self.set_port),
+                        MenuEntry(entry=self.format_entry('Server ID', DiscoveryOptions.SERVER_ID),
+                                  function=self.set_server_id),
                         MenuEntry('', None),
                         MenuEntry(entry='Apply Defaults', function=self.apply_defaults),
                         MenuEntry(entry='Save', function=self.save_settings)]
@@ -203,6 +205,13 @@ class DiscoveryServer():
                    response_type=int,
                    note='Discovery Server Port')
         self.conf.set(DiscoveryOptions.PORT, p.show())
+
+    def set_server_id(self):
+        p = Prompt(prompt='Server ID [{0}]: '.format(self.conf.get(DiscoveryOptions.SERVER_ID)),
+                   default_response=self.conf.get(DiscoveryOptions.SERVER_ID),
+                   response_type=int,
+                   note='Discovery Server ID (0-255)')
+        self.conf.set(DiscoveryOptions.SERVER_ID, p.show())
 
     def apply_defaults(self):
         self.conf.apply_default(self.conf.discovery_conf)
