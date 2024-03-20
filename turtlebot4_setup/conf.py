@@ -267,7 +267,7 @@ class Conf():
         with open(self.setup_bash_file, 'r') as f:
             for line in f.readlines():
                 for k in self.bash_conf.keys():
-                    if 'export {0}'.format(k) in line:
+                    if f'export {k}' in line:
                         try:
                             value = line.split('=')[1].strip().strip('\'"')
                             if value == '':
@@ -282,17 +282,20 @@ class Conf():
         bash = []
         with open(self.setup_bash_file, 'r') as f:
             bash = f.readlines()
-            for i, line in enumerate(bash):
-                is_conf = False
-                for k, v in self.bash_conf.items():
-                    if 'export {0}'.format(k) in line:
-                        if v is None:
-                            bash[i] = 'export {0}=\n'.format(k)
-                        else:
-                            bash[i] = 'export {0}={1}\n'.format(k, v)
-                        is_conf = True
-                if not is_conf:
-                    bash[i] = line
+            # Loop through every bash setting
+            for k, v in self.bash_conf.items():
+                # Check if the setting is currently in the setup.bash and update it
+                found = False
+                if v is None:
+                    v = ''
+                for i, line in enumerate(bash):
+                    if f'export {k}' in line:
+                        bash[i] = f'export {k}={v}\n'
+                        found = True
+
+                # If the setting is missing from the setup.bash, add it to the beginning
+                if not found:
+                    bash.insert(0,f'export {k}={v}\n')
 
         with open('/tmp' + self.setup_bash_file, 'w') as f:
             f.writelines(bash)
