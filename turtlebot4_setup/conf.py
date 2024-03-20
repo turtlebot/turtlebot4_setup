@@ -336,17 +336,11 @@ class Conf():
 
             # If Raspberry Pi is the discovery server, set the port in discovery.sh
             if self.get(DiscoveryOptions.IP) == '127.0.0.1':
-                discovery_sh = []
-                with open(self.discovery_sh_file, 'r') as f:
-                    discovery_sh = f.readlines()
-                    for i, line in enumerate(discovery_sh):
-                        if 'fastdds' in line:
-                            discovery_sh[i] = 'fastdds discovery -i {0} -p {1}'.format(
-                                self.get(DiscoveryOptions.SERVER_ID),
-                                self.get(DiscoveryOptions.PORT))
-
                 with open('/tmp' + self.discovery_sh_file, 'w') as f:
-                    f.writelines(discovery_sh)
+                    f.write('#!/bin/bash\n')
+                    f.write('# This file was automatically created by the turtlebot4-setup tool and should not be manually modified\n\n')
+                    f.write(f'source {self.get(BashOptions.WORKSPACE)}\n')
+                    f.write(f'fastdds discovery -i {self.get(DiscoveryOptions.SERVER_ID)} -p {self.get(DiscoveryOptions.PORT)}')
                 subprocess.run(shlex.split('sudo mv /tmp' + self.discovery_sh_file + ' ' + self.discovery_sh_file))
         else:
             self.set(BashOptions.DISCOVERY_SERVER, None)
