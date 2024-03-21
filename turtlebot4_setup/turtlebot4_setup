@@ -148,10 +148,12 @@ class Turtlebot4Setup():
             ros_namespace = '&ros_namespace=' + os.environ[BashOptions.NAMESPACE]
             rmw_implementation = '&rmw_implementation=' + os.environ[BashOptions.RMW]
 
-            if self.conf.get(DiscoveryOptions.IP) == '127.0.0.1':
-                discovery_server = '&fast_discovery_server_value=192.168.186.3:' + self.conf.get(DiscoveryOptions.PORT)
-            else:
-                discovery_server = '&fast_discovery_server_value=' + os.environ[BashOptions.DISCOVERY_SERVER]
+            id = self.conf.get(DiscoveryOptions.SERVER_ID)
+            port = self.conf.get(DiscoveryOptions.PORT)
+            ip = self.conf.get(DiscoveryOptions.IP)
+            if ip == '127.0.0.1':
+                ip = f'192.168.186.3'
+            discovery_server = f'&fast_discovery_server_value={self.conf.get_discovery_str(id, ip, port)}'
 
             if self.conf.get(DiscoveryOptions.ENABLED):
                 discovery_server_enabled = '&fast_discovery_server_enabled'
