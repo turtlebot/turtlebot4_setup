@@ -180,6 +180,16 @@ class Turtlebot4Setup():
             if (result.returncode != 0):
                 return (result.returncode, "Error writing ROS settings to Create3\n\n" + result.stderr.decode("utf-8"))
 
+            # Set time syncing to Raspberry PI
+            config = f'config=server 192.168.186.3 prefer iburst minpoll 4 maxpoll 6  # Use RPi4 server'
+            command = shlex.split(f'curl -d "{config}" -X POST http://192.168.186.2/beta-ntp-conf-save')
+            
+            result = subprocess.run(command, capture_output=True)
+
+            # If the curl command fails then return and indicate the error.
+            if (result.returncode != 0):
+                return (result.returncode, "Error writing NTP settings to Create3\n\n" + result.stderr.decode("utf-8"))
+
             # Reboot the Create3
             result = subprocess.run(shlex.split('curl -X POST http://192.168.186.2/api/reboot'), capture_output=True)
 
