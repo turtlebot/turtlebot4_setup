@@ -121,7 +121,13 @@ class Turtlebot4Setup():
     def apply_settings(self):
         apply_menu = OptionsMenu(self.settings_diff, ['Yes', 'No'], default_option='No')
         if apply_menu.show() == 'Yes':
-            self.apply_ros_settings()
+            error, msg = self.apply_ros_settings()
+            if error:
+                options = OptionsMenu(title='Error: Unable to set Create3 options.' +
+                                      'Please ensure that the Create3 is fully booted and apply again.\n\n Details:\n' + msg,
+                          menu_entries=['Okay'])
+                options.show()
+                return
             self.apply_wifi_settings()
             self.initial_conf = copy.deepcopy(self.conf)
 
@@ -161,22 +167,31 @@ class Turtlebot4Setup():
                 discovery_server_enabled = ''
 
             command = shlex.split(
-                'curl -d \"{0}{1}{2}{3}{4}\"'.format(ros_domain_id,
-                                                     ros_namespace,
-                                                     rmw_implementation,
-                                                     discovery_server,
-                                                     discovery_server_enabled)) + \
-                shlex.split('-X POST http://192.168.186.2/ros-config-save-main -o /dev/null')
+                'curl -d "{0}{1}{2}{3}{4}"'.format(ros_domain_id,
+                                                   ros_namespace,
+                                                   rmw_implementation,
+                                                   discovery_server,
+                                                   discovery_server_enabled)) + \
+                shlex.split('-X POST http://192.168.186.2/ros-config-save-main')
 
-            #print(command)
-            subprocess.run(command)
+            result = subprocess.run(command, capture_output=True)
 
-            subprocess.run(shlex.split(
-                'curl -X POST http://192.168.186.2/api/reboot'))
+            # If the curl command fails then return and do not set any more settings.
+            if (result.returncode != 0):
+                return (result.returncode, "Error writing ROS settings to Create3\n\n" + result.stderr.decode("utf-8"))
+
+            # Reboot the Create3
+            result = subprocess.run(shlex.split('curl -X POST http://192.168.186.2/api/reboot'), capture_output=True)
+
+            # If the curl command fails then return and indicate the error.
+            if (result.returncode != 0):
+                return (result.returncode, "Error requesting Create3 to reboot\n\n" + result.stderr.decode("utf-8"))
 
         if reinstall_job:
             self.ros.robot_upstart_menu.install()
             self.ros.robot_upstart_menu.start()
+
+        return (0, "Success")
 
     def apply_wifi_settings(self):
         # Run netplan apply if WiFi options have changed
