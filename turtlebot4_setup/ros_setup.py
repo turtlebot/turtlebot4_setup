@@ -98,8 +98,12 @@ class BashSetup():
                         self.conf.get(BashOptions.DOMAIN_ID)),
                    default_response=self.conf.get(BashOptions.DOMAIN_ID),
                    response_type=int,
-                   note='(0-101) or (215-232)')
-        self.conf.set(BashOptions.DOMAIN_ID, p.show())
+                   note='ROS Domain ID (0-101) or (215-232)')
+        domain_id = p.show()        
+        domain_id = max(0, min(int(domain_id), 232))
+        if (domain_id > 101 and domain_id < 215):
+            domain_id = 101
+        self.conf.set(BashOptions.DOMAIN_ID, domain_id)
 
     def set_cyclonedds_uri(self):
         p = Prompt(prompt='{0} [{1}]: '.format(
@@ -203,15 +207,19 @@ class DiscoveryServer():
         p = Prompt(prompt='Port [{0}]: '.format(self.conf.get(DiscoveryOptions.PORT)),
                    default_response=self.conf.get(DiscoveryOptions.PORT),
                    response_type=int,
-                   note='Discovery Server Port')
-        self.conf.set(DiscoveryOptions.PORT, p.show())
+                   note='Discovery Server Port (10000-65535)')
+        port = p.show()
+        port = max(10000, min(int(port), 65535))
+        self.conf.set(DiscoveryOptions.PORT, port)
 
     def set_server_id(self):
         p = Prompt(prompt='Server ID [{0}]: '.format(self.conf.get(DiscoveryOptions.SERVER_ID)),
                    default_response=self.conf.get(DiscoveryOptions.SERVER_ID),
                    response_type=int,
                    note='Discovery Server ID (0-255)')
-        self.conf.set(DiscoveryOptions.SERVER_ID, p.show())
+        server_id = p.show()
+        server_id = max(0, min(int(server_id), 255))
+        self.conf.set(DiscoveryOptions.SERVER_ID, server_id)
 
     def apply_defaults(self):
         self.conf.apply_default(self.conf.discovery_conf)
@@ -301,11 +309,17 @@ class RobotUpstart():
     def uninstall(self):
         self.stop()
 
+        # Uninstall Turtlebot4 Service
         turtlebot4_job = robot_upstart.Job(
             name='turtlebot4',
             workspace_setup=os.environ['ROBOT_SETUP'])
-
         turtlebot4_job.uninstall()
+
+        # Uninstall Discovery Server Service
+        if os.path.exists('/lib/systemd/system/discovery.service'):
+            subprocess.run(shlex.split('sudo systemctl stop discovery.service'), capture_output=True)
+            discovery_job = robot_upstart.Job(workspace_setup=os.environ['ROBOT_SETUP'])
+            discovery_job.uninstall(Provider=TurtleBot4Extras)
 
         self.daemon_reload()
 
@@ -330,4 +344,16 @@ class TurtleBot4Extras(robot_upstart.providers.Generic):
             },
             "/etc/systemd/system/multi-user.target.wants/discovery.service": {
                 "symlink": "/lib/systemd/system/discovery.service"
+            }}
+
+    def generate_uninstall(self):
+        return {
+            "/lib/systemd/system/discovery.service": {
+                "remove": True
+            },
+            "/usr/sbin/discovery": {
+                "remove": True
+            },
+            "/etc/systemd/system/multi-user.target.wants/discovery.service": {
+                "remove": True
             }}
