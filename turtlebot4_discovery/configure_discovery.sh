@@ -5,15 +5,25 @@ read -p "RPi4 IP address: " ip
 read -p "Discovery Server IP [$ip]: " discovery_ip
 discovery_ip=${discovery_ip:-$ip}
 
+read -p "Discovery Server ID [0]: " discovery_server_id
+discovery_server_id=${discovery_server_id:-0}
+
 read -p "Discovery Server Port [11811]: " discovery_port
 discovery_port=${discovery_port:-11811}
 
 read -p "ROS_DOMAIN_ID [0]: " domain_id
 domain_id=${domain_id:-0}
 
+discovery_str=""
+for i in {0..$discovery_server_id}
+do
+    discovery_str="${discovery_str};"
+done
+discovery_str="${discovery_str}${discovery_ip}:${discovery_port}"
+
 echo "Configuring:"
 echo " ip route add 192.168.186.0/24 via $ip";
-echo " ROS_DISCOVERY_SERVER=$discovery_ip:$discovery_port"
+echo " ROS_DISCOVERY_SERVER=$discovery_str"
 echo " ROS_DOMAIN_ID=$domain_id"
 
 # Delete existing route if applicable
@@ -35,8 +45,7 @@ rm /tmp/turtlebot4_setup/ -rf
 
 # Modify IP address
 sudo sed -i "s/10.42.0.1/$ip/g" /usr/local/sbin/ip_route.sh
-sudo sed -i "s/10.42.0.1/$discovery_ip/g" /etc/turtlebot4_discovery/setup.bash
-sudo sed -i "s/11811/$discovery_port/g" /etc/turtlebot4_discovery/setup.bash
+sudo sed -i "s/10.42.0.1:11811/$discovery_str/g" /etc/turtlebot4_discovery/setup.bash
 sudo sed -i "s/ROS_DOMAIN_ID=0/ROS_DOMAIN_ID=$domain_id/g" /etc/turtlebot4_discovery/setup.bash
 
 # Source setup.bash in .bashrc
