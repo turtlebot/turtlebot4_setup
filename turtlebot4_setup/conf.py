@@ -136,7 +136,7 @@ class Conf():
         self.read_system()
         self.read_wifi()
         self.read_bash()
-        self.read_discovery()
+        self.read_discovery()  # Must come after read_bash in order to have the discovery server envar
 
     def write(self):
         self.write_system()
@@ -175,11 +175,11 @@ class Conf():
 
         with open('/tmp' + self.system_file, 'w') as f:
             f.writelines(system)
-            subprocess.run(shlex.split('sudo mv /tmp' + self.system_file + ' ' + self.system_file))
+        subprocess.run(shlex.split('sudo mv /tmp' + self.system_file + ' ' + self.system_file))
 
         with open('/tmp' + self.hostname_file, 'w') as f:
             f.write(self.get(SystemOptions.HOSTNAME))
-            subprocess.run(shlex.split('sudo mv /tmp' + self.hostname_file + ' ' + self.hostname_file))
+        subprocess.run(shlex.split('sudo mv /tmp' + self.hostname_file + ' ' + self.hostname_file))
 
     def read_wifi(self):
         netplan = yaml.load(open(self.netplan_wifis_file, 'r'), yaml.SafeLoader)
@@ -251,8 +251,11 @@ class Conf():
             }
         }
 
+        with open('/tmp' + self.netplan_wifis_file, 'w') as f:
+            f.write('# This file was automatically created by the turtlebot4-setup tool and should not be manually modified\n\n')
+
         yaml.dump(netplan,
-                  stream=open('/tmp' + self.netplan_wifis_file, 'w+'),
+                  stream=open('/tmp' + self.netplan_wifis_file, 'a'),
                   Dumper=yaml.SafeDumper,
                   indent=4,
                   default_flow_style=False,
@@ -266,7 +269,7 @@ class Conf():
                 for k in self.bash_conf.keys():
                     if 'export {0}'.format(k) in line:
                         try:
-                            value = line.split('=')[1].strip()
+                            value = line.split('=')[1].strip().strip('\'"')
                             if value == '':
                                 self.set(k, None)
                             else:
@@ -293,7 +296,7 @@ class Conf():
 
         with open('/tmp' + self.setup_bash_file, 'w') as f:
             f.writelines(bash)
-            subprocess.run(shlex.split('sudo mv /tmp' + self.setup_bash_file + ' ' + self.setup_bash_file))
+        subprocess.run(shlex.split('sudo mv /tmp' + self.setup_bash_file + ' ' + self.setup_bash_file))
 
         for k, v in self.bash_conf.items():
             if v is None:
@@ -344,7 +347,7 @@ class Conf():
 
                 with open('/tmp' + self.discovery_sh_file, 'w') as f:
                     f.writelines(discovery_sh)
-                    subprocess.run(shlex.split('sudo mv /tmp' + self.discovery_sh_file + ' ' + self.discovery_sh_file))
+                subprocess.run(shlex.split('sudo mv /tmp' + self.discovery_sh_file + ' ' + self.discovery_sh_file))
         else:
             self.set(BashOptions.DISCOVERY_SERVER, None)
             self.set(BashOptions.SUPER_CLIENT, False)
