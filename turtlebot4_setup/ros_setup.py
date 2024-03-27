@@ -170,12 +170,16 @@ class DiscoveryServer():
 
         self.entries = [MenuEntry(entry=self.format_entry('Enabled', DiscoveryOptions.ENABLED),
                                   function=self.set_enabled),
-                        MenuEntry(entry=self.format_entry('IP', DiscoveryOptions.IP),
-                                  function=self.set_ip),
-                        MenuEntry(entry=self.format_entry('Port', DiscoveryOptions.PORT),
+                        MenuEntry(entry=self.format_entry('Onboard Server - Port', DiscoveryOptions.PORT),
                                   function=self.set_port),
-                        MenuEntry(entry=self.format_entry('Server ID', DiscoveryOptions.SERVER_ID),
+                        MenuEntry(entry=self.format_entry('Onboard Server - Server ID', DiscoveryOptions.SERVER_ID),
                                   function=self.set_server_id),
+                        MenuEntry(entry=self.format_entry('Offboard Server - IP', DiscoveryOptions.OFFBOARD_IP),
+                                  function=self.set_offboard_ip),
+                        MenuEntry(entry=self.format_entry('Offboard Server - Port', DiscoveryOptions.OFFBOARD_PORT),
+                                  function=self.set_offboard_port),
+                        MenuEntry(entry=self.format_entry('Offboard Server - Server ID', DiscoveryOptions.OFFBOARD_ID),
+                                  function=self.set_offboard_server_id),
                         MenuEntry('', None),
                         MenuEntry(entry='Apply Defaults', function=self.apply_defaults),
                         MenuEntry(entry='Save', function=self.save_settings)]
@@ -185,7 +189,7 @@ class DiscoveryServer():
     def format_entry(self, name, opt: DiscoveryOptions):
         return lambda: '{0}{1}[{2}]'.format(
             name,
-            ' ' * (12 - len(name)),
+            ' ' * (32 - len(name)),
             self.conf.get(opt))
 
     def show(self):
@@ -197,17 +201,11 @@ class DiscoveryServer():
                               default_option=self.conf.get(DiscoveryOptions.ENABLED))
         self.conf.set(DiscoveryOptions.ENABLED, options.show() == 'True')
 
-    def set_ip(self):
-        p = Prompt(prompt='IP [{0}]: '.format(self.conf.get(DiscoveryOptions.IP)),
-                   default_response=self.conf.get(DiscoveryOptions.IP),
-                   note='Discovery Server IP')
-        self.conf.set(DiscoveryOptions.IP, p.show())
-
     def set_port(self):
         p = Prompt(prompt='Port [{0}]: '.format(self.conf.get(DiscoveryOptions.PORT)),
                    default_response=self.conf.get(DiscoveryOptions.PORT),
                    response_type=int,
-                   note='Discovery Server Port (10000-65535)')
+                   note='Onboard Discovery Server Port (10000-65535)')
         port = p.show()
         port = max(10000, min(int(port), 65535))
         self.conf.set(DiscoveryOptions.PORT, port)
@@ -216,10 +214,38 @@ class DiscoveryServer():
         p = Prompt(prompt='Server ID [{0}]: '.format(self.conf.get(DiscoveryOptions.SERVER_ID)),
                    default_response=self.conf.get(DiscoveryOptions.SERVER_ID),
                    response_type=int,
-                   note='Discovery Server ID (0-255)')
+                   note='Onboard Discovery Server ID (0-255)')
         server_id = p.show()
         server_id = max(0, min(int(server_id), 255))
+        if (self.conf.get(DiscoveryOptions.OFFBOARD_IP) and (server_id == int(self.conf.get(DiscoveryOptions.OFFBOARD_ID)))):
+            return
         self.conf.set(DiscoveryOptions.SERVER_ID, server_id)
+
+    def set_offboard_ip(self):
+        p = Prompt(prompt='IP [{0}]: '.format(self.conf.get(DiscoveryOptions.OFFBOARD_IP)),
+                   default_response=self.conf.get(DiscoveryOptions.OFFBOARD_IP),
+                   note='Offboard Discovery Server IP (Leave blank to disable)')
+        self.conf.set(DiscoveryOptions.OFFBOARD_IP, p.show().strip().strip('\'"'))
+
+    def set_offboard_port(self):
+        p = Prompt(prompt='Port [{0}]: '.format(self.conf.get(DiscoveryOptions.OFFBOARD_PORT)),
+                   default_response=self.conf.get(DiscoveryOptions.OFFBOARD_PORT),
+                   response_type=int,
+                   note='Offboard Discovery Server Port (10000-65535)')
+        port = p.show()
+        port = max(10000, min(int(port), 65535))
+        self.conf.set(DiscoveryOptions.OFFBOARD_PORT, port)
+
+    def set_offboard_server_id(self):
+        p = Prompt(prompt='Server ID [{0}]: '.format(self.conf.get(DiscoveryOptions.OFFBOARD_ID)),
+                   default_response=self.conf.get(DiscoveryOptions.OFFBOARD_ID),
+                   response_type=int,
+                   note='Offboard Discovery Server ID (0-255) - Cannot be the same as the onboard server')
+        server_id = p.show()
+        server_id = max(0, min(int(server_id), 255))
+        if (server_id == int(self.conf.get(DiscoveryOptions.SERVER_ID))):
+            return
+        self.conf.set(DiscoveryOptions.OFFBOARD_ID, server_id)
 
     def apply_defaults(self):
         self.conf.apply_default(self.conf.discovery_conf)
@@ -299,7 +325,7 @@ class RobotUpstart():
                             self.conf.get(SystemOptions.MODEL)))
         turtlebot4_job.install()
 
-        if self.conf.get(DiscoveryOptions.ENABLED) and self.conf.get(DiscoveryOptions.IP) == '127.0.0.1':
+        if self.conf.get(DiscoveryOptions.ENABLED):
             discovery_job = robot_upstart.Job(workspace_setup=os.environ['ROBOT_SETUP'])
             discovery_job.install(Provider=TurtleBot4Extras)
             subprocess.run(shlex.split('sudo systemctl restart discovery.service'))

@@ -39,9 +39,11 @@ class BashOptions(str, Enum):
 
 class DiscoveryOptions(str, Enum):
     ENABLED = 'ENABLED'
-    IP = 'IP'
     PORT = 'PORT'
     SERVER_ID = 'SERVER_ID'
+    OFFBOARD_IP = 'OFFBOARD_IP'
+    OFFBOARD_PORT = 'OFFBOARD_PORT'
+    OFFBOARD_ID = 'OFFBOARD_ID'
 
 
 class Conf():
@@ -79,9 +81,11 @@ class Conf():
 
     default_discovery_conf = {
         DiscoveryOptions.ENABLED: False,
-        DiscoveryOptions.IP: '127.0.0.1',
         DiscoveryOptions.PORT: '11811',
         DiscoveryOptions.SERVER_ID: '0',
+        DiscoveryOptions.OFFBOARD_IP: '',
+        DiscoveryOptions.OFFBOARD_PORT: '11811',
+        DiscoveryOptions.OFFBOARD_ID: '1',
     }
 
     def __init__(self) -> None:
@@ -318,43 +322,71 @@ class Conf():
                 for i, s in enumerate(servers):
                     s = s.strip()
                     if s:
-                        self.set(DiscoveryOptions.SERVER_ID, i)
                         server = s.split(':')
-                        self.set(DiscoveryOptions.IP, server[0].strip('"'))
-                        if len(server) > 1:
-                            self.set(DiscoveryOptions.PORT, server[1].strip('"'))
+                        if (server[0].strip('"') == '127.0.0.1'):
+                            self.set(DiscoveryOptions.SERVER_ID, i)
+                            if len(server) > 1:
+                                self.set(DiscoveryOptions.PORT, int(server[1].strip('\'"')))
+                            else:
+                                self.set(DiscoveryOptions.PORT, 11811)
                         else:
-                            self.set(DiscoveryOptions.PORT, 11811)
-            except IndexError:
+                            self.set(DiscoveryOptions.OFFBOARD_ID, i)
+                            self.set(DiscoveryOptions.OFFBOARD_IP, server[0].strip('\'"'))
+                            if len(server) > 1:
+                                self.set(DiscoveryOptions.OFFBOARD_PORT, int(server[1].strip('\'"')))
+                            else:
+                                self.set(DiscoveryOptions.OFFBOARD_PORT, 11811)
+            except:
                 self.discovery_conf = self.default_discovery_conf
 
     def write_discovery(self):
         if self.get(DiscoveryOptions.ENABLED) is True:
-            self.set(BashOptions.DISCOVERY_SERVER, self.get_discovery_str(
-                self.get(DiscoveryOptions.SERVER_ID),
-                self.get(DiscoveryOptions.IP),
-                self.get(DiscoveryOptions.PORT)))
+            self.set(BashOptions.DISCOVERY_SERVER, self.get_discovery_str())
             self.set(BashOptions.RMW, 'rmw_fastrtps_cpp')
             self.set(BashOptions.SUPER_CLIENT, True)
 
-            # If Raspberry Pi is the discovery server, set the port in discovery.sh
-            if self.get(DiscoveryOptions.IP) == '127.0.0.1':
-                with open('/tmp' + self.discovery_sh_file, 'w') as f:
-                    f.write('#!/bin/bash\n')
-                    f.write('# This file was automatically created by the turtlebot4-setup tool and should not be manually modified\n\n')
-                    f.write(f'source {self.get(BashOptions.WORKSPACE)}\n')
-                    f.write(f'fastdds discovery -i {self.get(DiscoveryOptions.SERVER_ID)} -p {self.get(DiscoveryOptions.PORT)}')
-                subprocess.run(shlex.split('sudo mv /tmp' + self.discovery_sh_file + ' ' + self.discovery_sh_file))
+            with open('/tmp' + self.discovery_sh_file, 'w') as f:
+                f.write('#!/bin/bash\n')
+                f.write('# This file was automatically created by the turtlebot4-setup tool and should not be manually modified\n\n')
+                f.write(f'source {self.get(BashOptions.WORKSPACE)}\n')
+                f.write(f'fastdds discovery -i {self.get(DiscoveryOptions.SERVER_ID)} -p {self.get(DiscoveryOptions.PORT)}')
+            subprocess.run(shlex.split('sudo mv /tmp' + self.discovery_sh_file + ' ' + self.discovery_sh_file))
         else:
             self.set(BashOptions.DISCOVERY_SERVER, None)
             self.set(BashOptions.SUPER_CLIENT, False)
 
         self.write_bash()
 
-    @staticmethod
-    def get_discovery_str(server_id, ip, port) -> str:
+    def get_discovery_str(self) -> str:
         discovery_str = ''
-        for i in range(int(server_id)):
+        servers = [{
+            'id': self.get(DiscoveryOptions.SERVER_ID),
+            'ip': '127.0.0.1',
+            'port': self.get(DiscoveryOptions.PORT),
+            }]
+        offboard_ip = self.get(DiscoveryOptions.OFFBOARD_IP)
+        if offboard_ip:
+            servers.append({
+                'id': self.get(DiscoveryOptions.OFFBOARD_ID),
+                'ip': offboard_ip,
+                'port': self.get(DiscoveryOptions.OFFBOARD_PORT)
+                })
+
+        servers.sort(key=lambda s: int(s['id']))
+
+        i = 0
+        for s in servers:
+            while i < int(s['id']):
+                discovery_str += ';'
+                i += 1
+            discovery_str += f"{s['ip']}:{s['port']};"
+            i += 1
+        return discovery_str
+    
+    def get_create3_server_str(self) -> str:
+        # Create3 should only point at the local server on the pi
+        discovery_str = ''
+        for i in range(int(self.get(DiscoveryOptions.SERVER_ID))):
             discovery_str += ';'
-        discovery_str += f'{ip}:{port}'
+        discovery_str += f'192.168.186.3:{self.get(DiscoveryOptions.PORT)}'
         return discovery_str
