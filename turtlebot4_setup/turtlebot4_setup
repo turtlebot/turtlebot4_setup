@@ -152,6 +152,9 @@ class Turtlebot4Setup():
         if update_create3:
             ros_domain_id = 'ros_domain_id=' + os.environ[BashOptions.DOMAIN_ID]
             ros_namespace = '&ros_namespace=' + os.environ[BashOptions.NAMESPACE]
+            if self.conf.get(DiscoveryOptions.ENABLED):
+                # TODO(hilary-luo): Should be moved out of the if statement when the republisher is used for simple discovery
+                ros_namespace += '/_do_not_use'
             rmw_implementation = '&rmw_implementation=' + os.environ[BashOptions.RMW]
 
             discovery_server = f'&fast_discovery_server_value={self.conf.get_create3_server_str()}'
