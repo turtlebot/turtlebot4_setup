@@ -294,12 +294,12 @@ class Conf():
                     v = ''
                 for i, line in enumerate(bash):
                     if f'export {k}' in line:
-                        bash[i] = f'export {k}={v}\n'
+                        bash[i] = f'export {k}=\"{v}\"\n'
                         found = True
 
                 # If the setting is missing from the setup.bash, add it to the beginning
                 if not found:
-                    bash.insert(0,f'export {k}={v}\n')
+                    bash.insert(0,f'export {k}=\"{v}\"\n')
 
         with open('/tmp' + self.setup_bash_file, 'w') as f:
             f.writelines(bash)
