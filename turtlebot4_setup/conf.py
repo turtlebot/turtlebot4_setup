@@ -274,6 +274,8 @@ class Conf():
                     if f'export {k}' in line:
                         try:
                             value = line.split('=')[1].strip().strip('\'"')
+                            if (k == BashOptions.SUPER_CLIENT):
+                                value = value.split('||')[0].strip().strip('\'"')
                             if value == '':
                                 self.set(k, None)
                             else:
@@ -294,12 +296,22 @@ class Conf():
                     v = ''
                 for i, line in enumerate(bash):
                     if f'export {k}' in line:
-                        bash[i] = f'export {k}=\"{v}\"\n'
+                        if (k == BashOptions.SUPER_CLIENT and str(v) == 'True'):
+                            # Ensure super client is only applied on user terminals
+                            bash[i] = f'[ -t 0 ] && export {k}={v} || export {k}=False\n'
+                        else:
+                            # Quotations required around v to handle multiple servers in discovery server
+                            bash[i] = f'export {k}=\"{v}\"\n'
                         found = True
 
                 # If the setting is missing from the setup.bash, add it to the beginning
                 if not found:
-                    bash.insert(0,f'export {k}=\"{v}\"\n')
+                    if (k == BashOptions.SUPER_CLIENT and str(v) == 'True'):
+                        # Ensure super client is only applied on user terminals
+                        bash.insert(0,f'[ -t 0 ] && export {k}={v} || export {k}=False\n')
+                    else:
+                        # Quotations required around v to handle multiple servers in discovery server
+                        bash.insert(0,f'export {k}=\"{v}\"\n')
 
         with open('/tmp' + self.setup_bash_file, 'w') as f:
             f.writelines(bash)
