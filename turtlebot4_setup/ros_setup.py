@@ -225,7 +225,12 @@ class DiscoveryServer():
         p = Prompt(prompt='IP [{0}]: '.format(self.conf.get(DiscoveryOptions.OFFBOARD_IP)),
                    default_response=self.conf.get(DiscoveryOptions.OFFBOARD_IP),
                    note='Offboard Discovery Server IP (Leave blank to disable)')
-        self.conf.set(DiscoveryOptions.OFFBOARD_IP, p.show().strip().strip('\'"'))
+        ip_addr = p.show()
+        if ip_addr:
+            ip_addr = ip_addr.strip().strip('\'"')
+        else:
+            ip_addr = ''
+        self.conf.set(DiscoveryOptions.OFFBOARD_IP, ip_addr)
 
     def set_offboard_port(self):
         p = Prompt(prompt='Port [{0}]: '.format(self.conf.get(DiscoveryOptions.OFFBOARD_PORT)),
