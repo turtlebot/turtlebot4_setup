@@ -64,7 +64,7 @@ class Turtlebot4Setup():
                 if self.conf.get(option) == '' and self.initial_conf.get(option) == None or \
                    self.conf.get(option) == None and self.initial_conf.get(option) == '':
                     pass
-                elif (self.conf.get(option) != self.initial_conf.get(option)):
+                elif (str(self.conf.get(option)) != str(self.initial_conf.get(option))):
                     diff.append(option)
 
         return diff
