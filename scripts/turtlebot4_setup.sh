@@ -50,8 +50,6 @@ sudo rm /etc/netplan/50-cloud-init.yaml
 git clone https://github.com/turtlebot/turtlebot4_setup.git -b humble && \
 sudo mv turtlebot4_setup/boot/firmware/* /boot/firmware && rm turtlebot4_setup/ -rf
 
-sudo sed -i "s/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g" /etc/sysctl.conf
-
 echo "export ROBOT_SETUP=/etc/turtlebot4/setup.bash" | sudo tee -a ~/.bashrc
 echo "source \$ROBOT_SETUP" | sudo tee -a ~/.bashrc
 echo "source /etc/turtlebot4/aliases.bash" | sudo tee -a ~/.bashrc
