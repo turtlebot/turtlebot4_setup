@@ -227,7 +227,6 @@ class Conf():
 
         wlan0 = {
             'dhcp4': dhcp,
-            'optional': True,
             'access-points': {
                 ssid: {}
             }
@@ -247,11 +246,11 @@ class Conf():
 
         netplan = {
             'network': {
+                'version': 2,
                 'wifis': {
                     'renderer': 'NetworkManager',
                     'wlan0': wlan0,
                 },
-                'version': 2
             }
         }
 

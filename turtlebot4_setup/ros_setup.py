@@ -322,7 +322,8 @@ class RobotUpstart():
             name='turtlebot4',
             workspace_setup=os.environ['ROBOT_SETUP'],
             rmw=rmw,
-            rmw_config=rmw_config)
+            rmw_config=rmw_config,
+            systemd_after='network-online.target')
 
         turtlebot4_job.symlink = True
         turtlebot4_job.add(package='turtlebot4_bringup',

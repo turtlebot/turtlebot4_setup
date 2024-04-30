@@ -4,6 +4,7 @@ PKG="turtlebot4_setup"
 
 sudo service chrony restart
 sudo systemctl enable webserver.service
+sudo systemctl disable systemd-networkd-wait-online.service
 
 # Remove old/new dpkg configs
 sudo rm -f /etc/turtlebot4/*.dpkg-new
