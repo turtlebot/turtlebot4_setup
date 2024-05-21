@@ -159,8 +159,12 @@ class Turtlebot4Setup():
 
             discovery_server = f'&fast_discovery_server_value={self.conf.get_create3_server_str()}'
 
+            create3_rmw_profile = 'config='
             if self.conf.get(DiscoveryOptions.ENABLED):
                 discovery_server_enabled = '&fast_discovery_server_enabled'
+                create3_rmw_profile_file = os.path.join(self.conf.setup_dir, 'fastdds_discovery_create3.xml')
+                with open(create3_rmw_profile_file) as f:
+                    create3_rmw_profile += f.read()
             else:
                 discovery_server_enabled = ''
 
@@ -177,6 +181,15 @@ class Turtlebot4Setup():
             # If the curl command fails then return and do not set any more settings.
             if (result.returncode != 0):
                 return (result.returncode, "Error writing ROS settings to Create3\n\n" + result.stderr.decode("utf-8"))
+
+            # Set create3 rmw profile
+            command = shlex.split(f'curl -d {shlex.quote(create3_rmw_profile)} -X POST http://192.168.186.2/rmw-profile-override-save')
+            
+            result = subprocess.run(command, capture_output=True)
+
+            # If the curl command fails then return and indicate the error.
+            if (result.returncode != 0):
+                return (result.returncode, "Error writing RMW XML Profile to Create3\n\n" + result.stderr.decode("utf-8"))
 
             # Set time syncing to Raspberry PI
             config = f'config=server 192.168.186.3 prefer iburst minpoll 4 maxpoll 6  # Use RPi4 server'
