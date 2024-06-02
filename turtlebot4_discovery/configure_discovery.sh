@@ -39,32 +39,37 @@ read -p "ROS_DOMAIN_ID [0]: " domain_id
 domain_id=${domain_id:-0}
 
 discovery_str=""
-for i in {0..$discovery_server_id}
+for i in {0..{$discovery_server_id}}
 do
     discovery_str="${discovery_str};"
 done
 discovery_str="${discovery_str}${discovery_ip}:${discovery_port}"
 
 echo "Configuring:"
-echo " ROS_DISCOVERY_SERVER=$discovery_str"
+echo " ROS_DISCOVERY_SERVER=\"$discovery_str\""
 echo " ROS_DOMAIN_ID=$domain_id"
 
 # Make directory to hold configs
 sudo mkdir -p /etc/turtlebot4_discovery/
 
-# Clone turtlebot4_setup and install files
-git clone -b humble https://github.com/turtlebot/turtlebot4_setup.git /tmp/turtlebot4_setup/ &> /dev/null
-sudo mv /tmp/turtlebot4_setup/turtlebot4_discovery/setup.bash /etc/turtlebot4_discovery/
-rm /tmp/turtlebot4_setup/ -rf
+# Create setup.bash file
+setup_file_temp="/tmp/turtlebot4_discovery_setup.bash"
+echo "source /opt/ros/humble/setup.bash" > $setup_file_temp
+echo "export RMW_IMPLEMENTATION=rmw_fastrtps_cpp" >> $setup_file_temp
+echo "[ -t 0 ] && export ROS_SUPER_CLIENT=True || export ROS_SUPER_CLIENT=False" >> $setup_file_temp
 
-# Modify IP address
-sudo sed -i "s/10.42.0.1:11811/$discovery_str/g" /etc/turtlebot4_discovery/setup.bash
-sudo sed -i "s/ROS_DOMAIN_ID=0/ROS_DOMAIN_ID=$domain_id/g" /etc/turtlebot4_discovery/setup.bash
+# Add user configured data to setup.bash
+echo "export ROS_DISCOVERY_SERVER=\"$discovery_str\"" >> $setup_file_temp
+echo "export ROS_DOMAIN_ID=$domain_id" >> $setup_file_temp
+
+# Move setup.bash into final location
+setup_file="/etc/turtlebot4_discovery/setup.bash"
+sudo mv $setup_file_temp $setup_file
 
 # Source setup.bash in .bashrc
-if ! grep -Fq "source /etc/turtlebot4_discovery/setup.bash" ~/.bashrc
+if ! grep -Fq "source $setup_file" ~/.bashrc
 then
-    echo 'source /etc/turtlebot4_discovery/setup.bash' >> ~/.bashrc
+    echo "source $setup_file" >> ~/.bashrc
 fi
 
 if [ -f "/usr/local/sbin/ip_route.sh" ]||[ -f "/etc/systemd/system/ip_route.service" ];
@@ -79,7 +84,7 @@ then
         fi
         if [ -f "/etc/systemd/system/ip_route.service" ];
         then
-            # Enable and start IP route service
+            # Disable and remove IP route service
             sudo systemctl stop ip_route.service
             sudo systemctl disable ip_route.service
             sudo rm /etc/systemd/system/ip_route.service
