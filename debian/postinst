@@ -2,6 +2,7 @@
 
 PKG="turtlebot4_setup"
 
+sudo mv /etc/turtlebot4/chrony.conf /etc/chrony/chrony.conf
 sudo service chrony restart
 sudo systemctl enable webserver.service
 sudo systemctl disable systemd-networkd-wait-online.service
