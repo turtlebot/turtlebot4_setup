@@ -9,4 +9,3 @@ network:
                     mode: ap
                     password: Turtlebot4
             dhcp4: true
-            optional: true

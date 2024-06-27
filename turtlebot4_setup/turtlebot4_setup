@@ -64,7 +64,7 @@ class Turtlebot4Setup():
                 if self.conf.get(option) == '' and self.initial_conf.get(option) == None or \
                    self.conf.get(option) == None and self.initial_conf.get(option) == '':
                     pass
-                elif (self.conf.get(option) != self.initial_conf.get(option)):
+                elif (str(self.conf.get(option)) != str(self.initial_conf.get(option))):
                     diff.append(option)
 
         return diff
@@ -121,7 +121,13 @@ class Turtlebot4Setup():
     def apply_settings(self):
         apply_menu = OptionsMenu(self.settings_diff, ['Yes', 'No'], default_option='No')
         if apply_menu.show() == 'Yes':
-            self.apply_ros_settings()
+            error, msg = self.apply_ros_settings()
+            if error:
+                options = OptionsMenu(title='Error: Unable to set Create3 options.' +
+                                      'Please ensure that the Create3 is fully booted and apply again.\n\n Details:\n' + msg,
+                          menu_entries=['Okay'])
+                options.show()
+                return
             self.apply_wifi_settings()
             self.initial_conf = copy.deepcopy(self.conf)
 
@@ -146,35 +152,67 @@ class Turtlebot4Setup():
         if update_create3:
             ros_domain_id = 'ros_domain_id=' + os.environ[BashOptions.DOMAIN_ID]
             ros_namespace = '&ros_namespace=' + os.environ[BashOptions.NAMESPACE]
+            if self.conf.get(DiscoveryOptions.ENABLED):
+                # TODO(hilary-luo): Should be moved out of the if statement when the republisher is used for simple discovery
+                ros_namespace += '/_do_not_use'
             rmw_implementation = '&rmw_implementation=' + os.environ[BashOptions.RMW]
 
-            if self.conf.get(DiscoveryOptions.IP) == '127.0.0.1':
-                discovery_server = '&fast_discovery_server_value=192.168.186.3:' + self.conf.get(DiscoveryOptions.PORT)
-            else:
-                discovery_server = '&fast_discovery_server_value=' + os.environ[BashOptions.DISCOVERY_SERVER]
+            discovery_server = f'&fast_discovery_server_value={self.conf.get_create3_server_str()}'
 
+            create3_rmw_profile = 'config='
             if self.conf.get(DiscoveryOptions.ENABLED):
                 discovery_server_enabled = '&fast_discovery_server_enabled'
+                create3_rmw_profile_file = os.path.join(self.conf.setup_dir, 'fastdds_discovery_create3.xml')
+                with open(create3_rmw_profile_file) as f:
+                    create3_rmw_profile += f.read()
             else:
                 discovery_server_enabled = ''
 
             command = shlex.split(
-                'curl -d \"{0}{1}{2}{3}{4}\"'.format(ros_domain_id,
-                                                     ros_namespace,
-                                                     rmw_implementation,
-                                                     discovery_server,
-                                                     discovery_server_enabled)) + \
-                shlex.split('-X POST http://192.168.186.2/ros-config-save-main -o /dev/null')
+                'curl -d "{0}{1}{2}{3}{4}"'.format(ros_domain_id,
+                                                   ros_namespace,
+                                                   rmw_implementation,
+                                                   discovery_server,
+                                                   discovery_server_enabled)) + \
+                shlex.split('-X POST http://192.168.186.2/ros-config-save-main')
 
-            #print(command)
-            subprocess.run(command)
+            result = subprocess.run(command, capture_output=True)
 
-            subprocess.run(shlex.split(
-                'curl -X POST http://192.168.186.2/api/reboot'))
+            # If the curl command fails then return and do not set any more settings.
+            if (result.returncode != 0):
+                return (result.returncode, "Error writing ROS settings to Create3\n\n" + result.stderr.decode("utf-8"))
+
+            # Set create3 rmw profile
+            command = shlex.split(f'curl -d {shlex.quote(create3_rmw_profile)} -X POST http://192.168.186.2/rmw-profile-override-save')
+            
+            result = subprocess.run(command, capture_output=True)
+
+            # If the curl command fails then return and indicate the error.
+            if (result.returncode != 0):
+                return (result.returncode, "Error writing RMW XML Profile to Create3\n\n" + result.stderr.decode("utf-8"))
+
+            # Set time syncing to Raspberry PI
+            config = f'config=server 192.168.186.3 prefer iburst minpoll 4 maxpoll 6  # Use RPi4 server'
+            command = shlex.split(f'curl -d "{config}" -X POST http://192.168.186.2/beta-ntp-conf-save')
+            
+            result = subprocess.run(command, capture_output=True)
+
+            # If the curl command fails then return and indicate the error.
+            if (result.returncode != 0):
+                return (result.returncode, "Error writing NTP settings to Create3\n\n" + result.stderr.decode("utf-8"))
+
+            # Reboot the Create3
+            result = subprocess.run(shlex.split('curl -X POST http://192.168.186.2/api/reboot'), capture_output=True)
+
+            # If the curl command fails then return and indicate the error.
+            if (result.returncode != 0):
+                return (result.returncode, "Error requesting Create3 to reboot\n\n" + result.stderr.decode("utf-8"))
 
         if reinstall_job:
             self.ros.robot_upstart_menu.install()
             self.ros.robot_upstart_menu.start()
+
+        return (0, "Success")
 
     def apply_wifi_settings(self):
         # Run netplan apply if WiFi options have changed
