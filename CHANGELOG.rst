@@ -2,6 +2,36 @@
 Changelog for package turtlebot4_setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Multi-robot discovery server support (`#11 <https://github.com/turtlebot/turtlebot4_setup/issues/11>`)
+  * Add discovery server ID
+  * Switch from xml super client to envar
+  * Don't look for an ntp server on create3
+  * Adjust create3 discovery server envar for server_id
+  * Get feedback from the curl command to abort the apply if the create3 is not accessible
+  * Push ntp config to create3, pointing it at the pi
+  * Write discovery.sh fresh each time for robustness
+  * Insert missing exports when writing setup.bash
+  * Update script for server ID
+  * Enforce a local server in discovery server for the create3 and support an offboard server for pi only
+  * Give the create3 a hidden namespace to prepare for republishing
+  * Put environment variables in quotes to handle multiple discovery servers
+  * Make  Super Client only apply to user terminals
+  * Fix error when setting Offboard Discovery Server IP to blank
+  * Remove IP Routing from script to set up discovery server on the user computer, no longer needed due to the republisher, includes file/service cleanup
+  * Force compares as string to handle boolean settings correctly
+  * Ensure that usb0 and wlan0 networks are up before either turtlebot4 service is started and use only NetworkManager to speed up boot
+  * ipv4 forwarding is no longer required
+  * Add create3 rmw profile for discovery server
+  * git clone no longer necessary
+  * Update discovery server user pc config script to accept any number of discovery servers
+  * Added missing exec dependencies
+  * Ensure that the chrony file always gets overwritten
+* Update username for github issue asignment (`#10 <https://github.com/turtlebot/turtlebot4_setup/issues/10>`)
+* Updated issue templates to forms and redirected troubleshooting to turtlebot4 repo (`#9 <https://github.com/turtlebot/turtlebot4_setup/issues/9>`)
+* Contributors: Hilary Luo
+
 1.0.3 (2023-11-08)
 ------------------
 * Cleanup <https://github.com/turtlebot/turtlebot4_setup/issues/7>
