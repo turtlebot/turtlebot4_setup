@@ -2,8 +2,8 @@
 Changelog for package turtlebot4_setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.4 (2024-07-02)
+------------------
 * Multi-robot discovery server support (`#11 <https://github.com/turtlebot/turtlebot4_setup/issues/11>`)
   * Add discovery server ID
   * Switch from xml super client to envar
