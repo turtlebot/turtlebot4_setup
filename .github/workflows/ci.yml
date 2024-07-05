@@ -3,11 +3,11 @@ name: turtlebot4_setup_ci
 on: [push, pull_request]
 
 jobs:
-  turtlebot4_humble_ci:
-    name: Humble
-    runs-on: ubuntu-22.04
+  turtlebot4_jazzy_ci:
+    name: Jazzy
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v2.3.4
       - uses: ros-tooling/setup-ros@v0.3
         with:
-          required-ros-distributions: humble
+          required-ros-distributions: jazzy

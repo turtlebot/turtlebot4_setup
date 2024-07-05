@@ -31,15 +31,15 @@ echo "Setting up Turtlebot4";
 
 sudo apt update && sudo apt upgrade
 
-wget -qO - https://raw.githubusercontent.com/turtlebot/turtlebot4_setup/humble/scripts/humble.sh | bash
+wget -qO - https://raw.githubusercontent.com/turtlebot/turtlebot4_setup/jazzy/scripts/jazzy.sh | bash
 
 sudo apt update && sudo apt upgrade
 
-sudo apt install -y ros-humble-ros-base \
-ros-humble-turtlebot4-setup \
-ros-humble-turtlebot4-robot \
-ros-humble-irobot-create-control \
-ros-humble-turtlebot4-navigation \
+sudo apt install -y ros-jazzy-ros-base \
+ros-jazzy-turtlebot4-setup \
+ros-jazzy-turtlebot4-robot \
+ros-jazzy-irobot-create-control \
+ros-jazzy-turtlebot4-navigation \
 ros-dev-tools \
 socat \
 network-manager \
@@ -47,7 +47,7 @@ chrony
 
 sudo rm /etc/netplan/50-cloud-init.yaml
 
-git clone https://github.com/turtlebot/turtlebot4_setup.git -b humble && \
+git clone https://github.com/turtlebot/turtlebot4_setup.git -b jazzy && \
 sudo mv turtlebot4_setup/boot/firmware/* /boot/firmware && rm turtlebot4_setup/ -rf
 
 echo "export ROBOT_SETUP=/etc/turtlebot4/setup.bash" | sudo tee -a ~/.bashrc

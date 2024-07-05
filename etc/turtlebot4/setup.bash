@@ -5,7 +5,7 @@ export ROS_DOMAIN_ID=0
 export ROS_DISCOVERY_SERVER=
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 export TURTLEBOT4_DIAGNOSTICS=1
-export WORKSPACE_SETUP=/opt/ros/humble/setup.bash
+export WORKSPACE_SETUP=/opt/ros/jazzy/setup.bash
 export ROS_SUPER_CLIENT=False
 
 source $WORKSPACE_SETUP

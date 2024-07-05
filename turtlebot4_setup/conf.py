@@ -53,7 +53,7 @@ class Conf():
     default_system_conf = {
         SystemOptions.MODEL: 'lite',
         SystemOptions.VERSION: '1.0.0',
-        SystemOptions.ROS: 'Humble',
+        SystemOptions.ROS: 'Jazzy',
         SystemOptions.HOSTNAME: 'ubuntu',
     }
 
@@ -75,7 +75,7 @@ class Conf():
         BashOptions.DISCOVERY_SERVER: None,
         BashOptions.RMW: 'rmw_fastrtps_cpp',
         BashOptions.DIAGNOSTICS: '1',
-        BashOptions.WORKSPACE: '/opt/ros/humble/setup.bash',
+        BashOptions.WORKSPACE: '/opt/ros/jazzy/setup.bash',
         BashOptions.SUPER_CLIENT: False
     }
 
@@ -393,7 +393,7 @@ class Conf():
             discovery_str += f"{s['ip']}:{s['port']};"
             i += 1
         return discovery_str
-    
+
     def get_create3_server_str(self) -> str:
         # Create3 should only point at the local server on the pi
         discovery_str = ''
