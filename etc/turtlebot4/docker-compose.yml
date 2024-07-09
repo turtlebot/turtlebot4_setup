@@ -8,5 +8,5 @@ services:
     profiles:
       - create3
     volumes:
-      - ./docker/config:/opt/config
+      - /etc/turtlebot4/docker/config:/opt/config
     network_mode: host
