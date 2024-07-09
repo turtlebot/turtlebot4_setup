@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dds>
+    <profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+        <participant profile_name="turtlebot4_republisher_profile" is_default_profile="true">
+            <rtps>
+                <builtin>
+                    <initialPeersList>
+                        <locator>
+                            <udpv4>
+                                <address>127.0.0.1</address>
+                            </udpv4>
+                            <udpv4>
+                                <address>192.168.186.2</address>
+                            </udpv4>
+                        </locator>
+                    </initialPeersList>
+                </builtin>
+                <builtinTransports>UDPv4</builtinTransports>
+            </rtps>
+        </participant>
+    </profiles>
+</dds>

@@ -1,0 +1,12 @@
+services:
+  create3-republisher:
+    image: create3-republisher:latest
+    restart: no
+    env_file:
+      - config/create3.env
+    command: ros2 launch create3_republisher create3_republisher_launch.py robot_ns:=/ republisher_ns:=/create3_repub
+    profiles:
+      - create3
+    volumes:
+      - ./docker/config:/opt/config
+    network_mode: host
