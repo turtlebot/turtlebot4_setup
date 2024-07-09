@@ -9,7 +9,8 @@ RUN apt-get update && apt-get install -y \
       ros-${ROS_DISTRO}-create3-republisher \
       git \
       nano \
-      net-tools && \
+      net-tools \
+      iputils-ping && \
     rm -rf /var/lib/apt/lists/*
 
 ARG USERNAME=ros

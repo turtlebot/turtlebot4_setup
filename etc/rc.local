@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Give ourselves some swap to deal with RAM issues
+if [ -f /swapfile ]; then
+  swapon /swapfile
+fi
+
+# Create a macvlan bridge to communicate with the docker container
+ip link add vlan-shim link usb0 type macvlan mode bridge
+ip addr add 192.168.186.10/24 dev vlan-shim
+ip link set vlan-shim up
