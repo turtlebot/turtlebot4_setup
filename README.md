@@ -4,6 +4,8 @@ Setup scripts and tools for the TurtleBot 4 Raspberry Pi.
 
 Visit the [TurtleBot 4 User Manual](https://turtlebot.github.io/turtlebot4-user-manual/software/turtlebot4_setup.html) for more details.
 
+Make sure your Create® 3 is updated to the `I.*.*` firmware; older versions of the firmware are not compatible with ROS 2 Jazzy.
+
 # Create an image manually
 
 Follow these instructions if you wish to create a Turtlebot4 image manually.
