@@ -195,36 +195,42 @@ class Conf():
         subprocess.run(shlex.split('sudo mv /tmp' + self.hostname_file + ' ' + self.hostname_file))
 
     def read_wifi(self):
-        netplan = yaml.load(open(self.netplan_wifis_file, 'r'), yaml.SafeLoader)
-        # wlan0 Config
-        wlan0 = netplan['network']['wifis']['wlan0']
+        try:
+            # Try to open the existing wifi configuration, but if it doesn't exist we can carry on
+            netplan = yaml.load(open(self.netplan_wifis_file, 'r'), yaml.SafeLoader)
 
-        # Get SSID
-        self.set(WifiOptions.SSID, list(wlan0['access-points'])[0])
-        # SSID settings
-        ssid_settings = wlan0['access-points'][self.get(WifiOptions.SSID)]
+            # wlan0 Config
+            wlan0 = netplan['network']['wifis']['wlan0']
 
-        self.set(WifiOptions.PASSWORD, ssid_settings.get('password'))
+            # Get SSID
+            self.set(WifiOptions.SSID, list(wlan0['access-points'])[0])
+            # SSID settings
+            ssid_settings = wlan0['access-points'][self.get(WifiOptions.SSID)]
 
-        if wlan0.get('addresses'):
-            self.set(WifiOptions.IP, wlan0['addresses'][0])
-        else:
-            self.set(WifiOptions.IP, None)
+            self.set(WifiOptions.PASSWORD, ssid_settings.get('password'))
 
-        if wlan0.get('dhcp4') is True:
-            self.set(WifiOptions.DHCP, True)
-        else:
-            self.set(WifiOptions.DHCP, False)
+            if wlan0.get('addresses'):
+                self.set(WifiOptions.IP, wlan0['addresses'][0])
+            else:
+                self.set(WifiOptions.IP, None)
 
-        if ssid_settings.get('mode') == 'ap':
-            self.set(WifiOptions.WIFI_MODE, 'Access Point')
-        else:
-            self.set(WifiOptions.WIFI_MODE, 'Client')
+            if wlan0.get('dhcp4') is True:
+                self.set(WifiOptions.DHCP, True)
+            else:
+                self.set(WifiOptions.DHCP, False)
 
-        if ssid_settings.get('band'):
-            self.set(WifiOptions.BAND, ssid_settings.get('band'))
-        else:
-            self.set(WifiOptions.BAND, 'Any')
+            if ssid_settings.get('mode') == 'ap':
+                self.set(WifiOptions.WIFI_MODE, 'Access Point')
+            else:
+                self.set(WifiOptions.WIFI_MODE, 'Client')
+
+            if ssid_settings.get('band'):
+                self.set(WifiOptions.BAND, ssid_settings.get('band'))
+            else:
+                self.set(WifiOptions.BAND, 'Any')
+        except:
+            # If the wifi configuration doesn't have a wlan0 configuration, just skip this
+            pass
 
     def write_wifi(self):
         ssid = self.get(WifiOptions.SSID)
