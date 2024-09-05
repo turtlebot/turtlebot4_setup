@@ -3,6 +3,7 @@ import os
 import yaml
 import subprocess
 import shlex
+import sys
 
 from enum import Enum
 
@@ -137,16 +138,24 @@ class Conf():
             self.discovery_conf = copy.deepcopy(self.default_discovery_conf)
 
     def read(self):
-        self.read_system()
-        self.read_wifi()
-        self.read_bash()
-        self.read_discovery()  # Must come after read_bash in order to have the discovery server envar
+        try:
+            self.read_system()
+            self.read_wifi()
+            self.read_bash()
+            self.read_discovery()  # Must come after read_bash in order to have the discovery server envar
+        except Exception as err:
+            print(f'Error reading configuration: {err}. Terminating')
+            sys.exit(1)
 
     def write(self):
-        self.write_system()
-        self.write_wifi()
-        self.write_discovery()
-        self.write_bash()
+        try:
+            self.write_system()
+            self.write_wifi()
+            self.write_discovery()
+            self.write_bash()
+        except Exception as err:
+            print(f'Error writing configuration: {err}. Configuration may be incomplete')
+            sys.exit(1)
 
     def read_system(self):
         with open(self.system_file, 'r') as f:
