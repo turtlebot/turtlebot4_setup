@@ -7,8 +7,6 @@ from pygments.util import ClassNotFound
 
 import os
 
-import readline
-
 
 class MenuEntry():
 
@@ -123,13 +121,13 @@ class OptionsMenu(Menu):
 
 
 class HelpMenu(Menu):
-
+    # Help -- https://patorjk.com/software/taag/#p=display&v=0&f=Small
     title = """
-  _  _     _    
- | || |___| |_ __ 
+  _  _     _
+ | || |___| |_ __
  | __ / -_) | '_ \\
- |_||_\___|_| .__/
-            |_|  
+ |_||_\\___|_| .__/
+            |_|
 """
 
     def __init__(self, text: str, display_help_title=True) -> None:

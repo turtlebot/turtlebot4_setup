@@ -6,12 +6,13 @@ from turtlebot4_setup.conf import Conf, WifiOptions
 
 
 class WifiSetup():
+    # WiFi Setup -- https://patorjk.com/software/taag/#p=display&v=0&f=Small
     title = """
- __      ___ ___ _   ___      _ 
- \ \    / (_) __(_) / __| ___| |_ _  _ _ __ 
-  \ \/\/ /| | _|| | \__ \/ -_)  _| || | '_ \\
-   \_/\_/ |_|_| |_| |___/\___|\__|\_,_| .__/
-                                      |_|    
+ __      ___ ___ _   ___      _
+ \\ \\    / (_) __(_) / __| ___| |_ _  _ _ __
+  \\ \\/\\/ /| | _|| | \\__ \\/ -_)  _| || | '_ \\
+   \\_/\\_/ |_|_| |_| |___/\\___|\\__|\\_,_| .__/
+                                      |_|
 """
 
     def __init__(self, configs: Conf) -> None:
