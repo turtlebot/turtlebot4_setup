@@ -389,6 +389,7 @@ class RobotUpstart():
 
 
 class TurtleBot4Extras(robot_upstart.providers.Generic):
+
     def post_install(self):
         pass
 
