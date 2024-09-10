@@ -1,11 +1,33 @@
+#!/usr/bin/env python3
+
+# Copyright 2024 Clearpath Robotics
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import copy
+from enum import Enum
 import os
-import yaml
-import subprocess
 import shlex
+import subprocess
 import sys
 
-from enum import Enum
+import yaml
+
+
+__author__ = 'Roni Kreinin'
+__email__ = 'rkreinin@clearpathrobotics.com'
+__copyright__ = 'Copyright © 2023 Clearpath Robotics. All rights reserved.'
+__license__ = 'Apache 2.0'
 
 
 class SystemOptions(str, Enum):
@@ -117,7 +139,7 @@ class Conf():
             return self.discovery_conf.get(conf)
         return None
 
-    def set(self, conf, value):
+    def set(self, conf, value):  # noqa: A003
         if isinstance(conf, SystemOptions):
             self.system_conf[conf] = value
         elif isinstance(conf, WifiOptions):
@@ -142,7 +164,8 @@ class Conf():
             self.read_system()
             self.read_wifi()
             self.read_bash()
-            self.read_discovery()  # Must come after read_bash in order to have the discovery server envar
+            # Must come after read_bash in order to have the discovery server envar
+            self.read_discovery()
         except Exception as err:
             print(f'Error reading configuration: {err}. Terminating')
             sys.exit(1)
@@ -228,7 +251,7 @@ class Conf():
                 self.set(WifiOptions.BAND, ssid_settings.get('band'))
             else:
                 self.set(WifiOptions.BAND, 'Any')
-        except:
+        except Exception:
             # If the wifi configuration doesn't have a wlan0 configuration, just skip this
             pass
 
@@ -270,7 +293,7 @@ class Conf():
         }
 
         with open('/tmp' + self.netplan_wifis_file, 'w') as f:
-            f.write('# This file was automatically created by the turtlebot4-setup tool and should not be manually modified\n\n')
+            f.write('# This file was automatically created by the turtlebot4-setup tool and should not be manually modified\n\n')  # noqa: E501
 
         yaml.dump(netplan,
                   stream=open('/tmp' + self.netplan_wifis_file, 'a'),
@@ -279,7 +302,8 @@ class Conf():
                   default_flow_style=False,
                   default_style=None)
 
-        subprocess.run(shlex.split('sudo mv /tmp' + self.netplan_wifis_file + ' ' + self.netplan_wifis_file))
+        subprocess.run(shlex.split(
+            'sudo mv /tmp' + self.netplan_wifis_file + ' ' + self.netplan_wifis_file))
 
     def read_bash(self):
         with open(self.setup_bash_file, 'r') as f:
@@ -314,7 +338,8 @@ class Conf():
                             # Ensure super client is only applied on user terminals
                             bash[i] = f'[ -t 0 ] && export {k}={v} || export {k}=False\n'
                         else:
-                            # Quotations required around v to handle multiple servers in discovery server
+                            # Quotations required around v to handle multiple servers
+                            # in discovery server
                             bash[i] = f'export {k}=\"{v}\"\n'
                         found = True
 
@@ -322,14 +347,15 @@ class Conf():
                 if not found:
                     if (k == BashOptions.SUPER_CLIENT and str(v) == 'True'):
                         # Ensure super client is only applied on user terminals
-                        bash.insert(0,f'[ -t 0 ] && export {k}={v} || export {k}=False\n')
+                        bash.insert(0, f'[ -t 0 ] && export {k}={v} || export {k}=False\n')
                     else:
-                        # Quotations required around v to handle multiple servers in discovery server
-                        bash.insert(0,f'export {k}=\"{v}\"\n')
+                        # Quotations required around v to handle multiple servers
+                        # in discovery server
+                        bash.insert(0, f'export {k}=\"{v}\"\n')
 
         with open('/tmp' + self.setup_bash_file, 'w') as f:
             f.writelines(bash)
-        subprocess.run(shlex.split('sudo mv /tmp' + self.setup_bash_file + ' ' + self.setup_bash_file))
+        subprocess.run(shlex.split(f'sudo mv /tmp{self.setup_bash_file} {self.setup_bash_file}'))
 
         for k, v in self.bash_conf.items():
             if v is None:
@@ -359,10 +385,11 @@ class Conf():
                             self.set(DiscoveryOptions.OFFBOARD_ID, i)
                             self.set(DiscoveryOptions.OFFBOARD_IP, server[0].strip('\'"'))
                             if len(server) > 1:
-                                self.set(DiscoveryOptions.OFFBOARD_PORT, int(server[1].strip('\'"')))
+                                self.set(
+                                    DiscoveryOptions.OFFBOARD_PORT, int(server[1].strip('\'"')))
                             else:
                                 self.set(DiscoveryOptions.OFFBOARD_PORT, 11811)
-            except:
+            except Exception:
                 self.discovery_conf = self.default_discovery_conf
 
     def write_discovery(self):
@@ -373,10 +400,11 @@ class Conf():
 
             with open('/tmp' + self.discovery_sh_file, 'w') as f:
                 f.write('#!/bin/bash\n')
-                f.write('# This file was automatically created by the turtlebot4-setup tool and should not be manually modified\n\n')
+                f.write('# This file was automatically created by the turtlebot4-setup tool and should not be manually modified\n\n')  # noqa: E501
                 f.write(f'source {self.get(BashOptions.WORKSPACE)}\n')
-                f.write(f'fastdds discovery -i {self.get(DiscoveryOptions.SERVER_ID)} -p {self.get(DiscoveryOptions.PORT)}')
-            subprocess.run(shlex.split('sudo mv /tmp' + self.discovery_sh_file + ' ' + self.discovery_sh_file))
+                f.write(f'fastdds discovery -i {self.get(DiscoveryOptions.SERVER_ID)} -p {self.get(DiscoveryOptions.PORT)}')  # noqa: E501
+            subprocess.run(shlex.split(
+                'sudo mv /tmp' + self.discovery_sh_file + ' ' + self.discovery_sh_file))
         else:
             self.set(BashOptions.DISCOVERY_SERVER, None)
             self.set(BashOptions.SUPER_CLIENT, False)

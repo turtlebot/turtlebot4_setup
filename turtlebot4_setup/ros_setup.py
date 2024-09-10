@@ -1,11 +1,32 @@
-from turtlebot4_setup.menu import Menu, OptionsMenu, MenuEntry, Prompt
-from turtlebot4_setup.conf import Conf, SystemOptions, BashOptions, DiscoveryOptions
+#!/usr/bin/env python3
+
+# Copyright 2024 Clearpath Robotics
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import os
-
-import subprocess, shlex
+import shlex
+import subprocess
 
 import robot_upstart
+from turtlebot4_setup.conf import BashOptions, Conf, DiscoveryOptions, SystemOptions
+from turtlebot4_setup.menu import Menu, MenuEntry, OptionsMenu, Prompt
+
+
+__author__ = 'Roni Kreinin'
+__email__ = 'rkreinin@clearpathrobotics.com'
+__copyright__ = 'Copyright © 2023 Clearpath Robotics. All rights reserved.'
+__license__ = 'Apache 2.0'
 
 
 class RosSetup():
@@ -138,14 +159,15 @@ class BashSetup():
                    note='ROS2 namespace')
         # Add '/' if needed
         ns = p.show()
-        if ns != None and ns[0] != '/':
+        if ns is not None and ns[0] != '/':
             ns = '/' + ns
         self.conf.set(BashOptions.NAMESPACE, ns)
 
     def set_turtlebot4_diagnostics(self):
-        options = OptionsMenu(title=BashOptions.DIAGNOSTICS,
-                              menu_entries=['Enabled', 'Disabled'],
-                              default_option='Enabled' if self.conf.get(BashOptions.DIAGNOSTICS) == '1' else 'Disabled')
+        options = OptionsMenu(
+            title=BashOptions.DIAGNOSTICS,
+            menu_entries=['Enabled', 'Disabled'],
+            default_option='Enabled' if self.conf.get(BashOptions.DIAGNOSTICS) == '1' else 'Disabled')  # noqa: E501
         self.conf.set(BashOptions.DIAGNOSTICS, '1' if options.show() == 'Enabled' else '0')
 
     def save_settings(self):
@@ -169,21 +191,28 @@ class DiscoveryServer():
     def __init__(self, configs: Conf) -> None:
         self.conf = configs
 
-        self.entries = [MenuEntry(entry=self.format_entry('Enabled', DiscoveryOptions.ENABLED),
-                                  function=self.set_enabled),
-                        MenuEntry(entry=self.format_entry('Onboard Server - Port', DiscoveryOptions.PORT),
-                                  function=self.set_port),
-                        MenuEntry(entry=self.format_entry('Onboard Server - Server ID', DiscoveryOptions.SERVER_ID),
-                                  function=self.set_server_id),
-                        MenuEntry(entry=self.format_entry('Offboard Server - IP', DiscoveryOptions.OFFBOARD_IP),
-                                  function=self.set_offboard_ip),
-                        MenuEntry(entry=self.format_entry('Offboard Server - Port', DiscoveryOptions.OFFBOARD_PORT),
-                                  function=self.set_offboard_port),
-                        MenuEntry(entry=self.format_entry('Offboard Server - Server ID', DiscoveryOptions.OFFBOARD_ID),
-                                  function=self.set_offboard_server_id),
-                        MenuEntry('', None),
-                        MenuEntry(entry='Apply Defaults', function=self.apply_defaults),
-                        MenuEntry(entry='Save', function=self.save_settings)]
+        self.entries = [
+            MenuEntry(
+                entry=self.format_entry('Enabled', DiscoveryOptions.ENABLED),
+                function=self.set_enabled),
+            MenuEntry(
+                entry=self.format_entry('Onboard Server - Port', DiscoveryOptions.PORT),
+                function=self.set_port),
+            MenuEntry(
+                entry=self.format_entry('Onboard Server - Server ID', DiscoveryOptions.SERVER_ID),
+                function=self.set_server_id),
+            MenuEntry(
+                entry=self.format_entry('Offboard Server - IP', DiscoveryOptions.OFFBOARD_IP),
+                function=self.set_offboard_ip),
+            MenuEntry(
+                entry=self.format_entry('Offboard Server - Port', DiscoveryOptions.OFFBOARD_PORT),
+                function=self.set_offboard_port),
+            MenuEntry(
+                entry=self.format_entry('Offboard Server - Server ID', DiscoveryOptions.OFFBOARD_ID),  # noqa: E501
+                function=self.set_offboard_server_id),
+            MenuEntry('', None),
+            MenuEntry(entry='Apply Defaults', function=self.apply_defaults),
+            MenuEntry(entry='Save', function=self.save_settings)]
 
         self.menu = Menu(title=self.title, menu_entries=self.entries)
 
@@ -218,7 +247,7 @@ class DiscoveryServer():
                    note='Onboard Discovery Server ID (0-255)')
         server_id = p.show()
         server_id = max(0, min(int(server_id), 255))
-        if (self.conf.get(DiscoveryOptions.OFFBOARD_IP) and (server_id == int(self.conf.get(DiscoveryOptions.OFFBOARD_ID)))):
+        if (self.conf.get(DiscoveryOptions.OFFBOARD_IP) and (server_id == int(self.conf.get(DiscoveryOptions.OFFBOARD_ID)))):  # noqa: 501
             return
         self.conf.set(DiscoveryOptions.SERVER_ID, server_id)
 
@@ -246,7 +275,7 @@ class DiscoveryServer():
         p = Prompt(prompt='Server ID [{0}]: '.format(self.conf.get(DiscoveryOptions.OFFBOARD_ID)),
                    default_response=self.conf.get(DiscoveryOptions.OFFBOARD_ID),
                    response_type=int,
-                   note='Offboard Discovery Server ID (0-255) - Cannot be the same as the onboard server')
+                   note='Offboard Discovery Server ID (0-255) - Cannot be the same as the onboard server')  # noqa: 501
         server_id = p.show()
         server_id = max(0, min(int(server_id), 255))
         if (server_id == int(self.conf.get(DiscoveryOptions.SERVER_ID))):
@@ -283,7 +312,8 @@ class RobotUpstart():
                                   function=self.install),
                         MenuEntry(entry='Uninstall',
                                   function=self.uninstall),
-                        MenuEntry(entry='',function=None),
+                        MenuEntry(entry='',
+                                  function=None),
                         MenuEntry(entry='Status',
                                   function=self.view_service_status)]
 
@@ -350,7 +380,8 @@ class RobotUpstart():
 
         # Uninstall Discovery Server Service
         if os.path.exists('/lib/systemd/system/discovery.service'):
-            subprocess.run(shlex.split('sudo systemctl stop discovery.service'), capture_output=True)
+            subprocess.run(shlex.split(
+                'sudo systemctl stop discovery.service'), capture_output=True)
             discovery_job = robot_upstart.Job(workspace_setup=os.environ['ROBOT_SETUP'])
             discovery_job.uninstall(Provider=TurtleBot4Extras)
 
@@ -367,26 +398,26 @@ class TurtleBot4Extras(robot_upstart.providers.Generic):
         with open('/etc/turtlebot4/discovery.sh') as f:
             discovery_sh_contents = f.read()
         return {
-            "/lib/systemd/system/discovery.service": {
-                "content": discovery_conf_contents,
-                "mode": 0o644
+            '/lib/systemd/system/discovery.service': {
+                'content': discovery_conf_contents,
+                'mode': 0o644
             },
-            "/usr/sbin/discovery": {
-                "content": discovery_sh_contents,
-                "mode": 0o755
+            '/usr/sbin/discovery': {
+                'content': discovery_sh_contents,
+                'mode': 0o755
             },
-            "/etc/systemd/system/multi-user.target.wants/discovery.service": {
-                "symlink": "/lib/systemd/system/discovery.service"
+            '/etc/systemd/system/multi-user.target.wants/discovery.service': {
+                'symlink': '/lib/systemd/system/discovery.service'
             }}
 
     def generate_uninstall(self):
         return {
-            "/lib/systemd/system/discovery.service": {
-                "remove": True
+            '/lib/systemd/system/discovery.service': {
+                'remove': True
             },
-            "/usr/sbin/discovery": {
-                "remove": True
+            '/usr/sbin/discovery': {
+                'remove': True
             },
-            "/etc/systemd/system/multi-user.target.wants/discovery.service": {
-                "remove": True
+            '/etc/systemd/system/multi-user.target.wants/discovery.service': {
+                'remove': True
             }}

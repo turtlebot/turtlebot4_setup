@@ -1,11 +1,33 @@
-from simple_term_menu_vendor.simple_term_menu import TerminalMenu
+#!/usr/bin/env python3
 
-from typing import List, Callable, Union
+# Copyright 2024 Clearpath Robotics
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import os
+
+from typing import Callable, List, Union
 
 from pygments import formatters, highlight, lexers
 from pygments.util import ClassNotFound
 
-import os
+from simple_term_menu_vendor.simple_term_menu import TerminalMenu
+
+
+__author__ = 'Roni Kreinin'
+__email__ = 'rkreinin@clearpathrobotics.com'
+__copyright__ = 'Copyright © 2023 Clearpath Robotics. All rights reserved.'
+__license__ = 'Apache 2.0'
 
 
 class MenuEntry():
@@ -78,7 +100,7 @@ class Menu():
         self.menu = self.create_term_menu()
         self.menu_sel = 0
 
-    def exit(self):
+    def exit(self):  # noqa: A003
         self.menu_exit = True
 
     def show(self, reset=True):
@@ -96,7 +118,7 @@ class Menu():
 
 class OptionsMenu(Menu):
 
-    def __init__(self, title: Union[str, Callable], menu_entries: List[str], default_option=None) -> None:
+    def __init__(self, title: Union[str, Callable], menu_entries: List[str], default_option=None) -> None:  # noqa: E501
         self.option = default_option
         self.menu_entries = []
 
@@ -197,12 +219,12 @@ class PreviewMenu():
         return files
 
     def highlight_file(self, filepath):
-        with open(filepath, "r") as f:
+        with open(filepath, 'r') as f:
             file_content = f.read()
         try:
             lexer = lexers.get_lexer_for_filename(filepath, stripnl=False, stripall=False)
         except ClassNotFound:
-            lexer = lexers.get_lexer_by_name("text", stripnl=False, stripall=False)
-        formatter = formatters.TerminalFormatter(bg="dark")  # dark or light
+            lexer = lexers.get_lexer_by_name('text', stripnl=False, stripall=False)
+        formatter = formatters.TerminalFormatter(bg='dark')  # dark or light
         highlighted_file_content = highlight(file_content, lexer, formatter)
         return highlighted_file_content
