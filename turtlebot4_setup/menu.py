@@ -220,18 +220,20 @@ class PreviewMenu():
 
     def highlight_file(self, filepath):
         try:
+            lexer = lexers.get_lexer_for_filename(filepath, stripnl=False, stripall=False)
+        except ClassNotFound:
+            lexer = lexers.get_lexer_by_name('text', stripnl=False, stripall=False)
+        formatter = formatters.TerminalFormatter(bg='dark')  # dark or light
+
+        try:
             with open(filepath, 'r') as f:
                 file_content = f.read()
-            try:
-                lexer = lexers.get_lexer_for_filename(filepath, stripnl=False, stripall=False)
-            except ClassNotFound:
-                lexer = lexers.get_lexer_by_name('text', stripnl=False, stripall=False)
-            formatter = formatters.TerminalFormatter(bg='dark')  # dark or light
-            highlighted_file_content = highlight(file_content, lexer, formatter)
-            return highlighted_file_content
         except PermissionError:
-            return 'Permission denied.\nPlease check file permissions'
+            file_content = 'Permission denied.\nPlease check file permissions'
         except FileNotFoundError:
-            return f'{filepath} was deleted'
+            file_content = f'{filepath} was deleted'
         except Exception as err:
-            return f'Error reading {filepath}:\n{err}'
+            file_content = f'Error reading {filepath}:\n{err}'
+
+        highlighted_file_content = highlight(file_content, lexer, formatter)
+        return highlighted_file_content
