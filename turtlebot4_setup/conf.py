@@ -338,7 +338,7 @@ class Conf():
                     if export_re.match(line):
                         if (k == BashOptions.SUPER_CLIENT and str(v) == 'True'):
                             # Ensure super client is only applied on user terminals
-                            bash[i] = f'[ -t 0 ] && export {k.value}={v} || export {k.value}=False\n'
+                            bash[i] = f'[ -t 0 ] && export {k.value}={v} || export {k.value}=False\n'  # noqa: 501
                         else:
                             # Quotations required around v to handle multiple servers
                             # in discovery server
@@ -349,7 +349,7 @@ class Conf():
                 if not found:
                     if (k == BashOptions.SUPER_CLIENT and str(v) == 'True'):
                         # Ensure super client is only applied on user terminals
-                        bash.insert(0, f'[ -t 0 ] && export {k.value}={v} || export {k.value}=False\n')
+                        bash.insert(0, f'[ -t 0 ] && export {k.value}={v} || export {k.value}=False\n')  # noqa: 501
                     else:
                         # Quotations required around v to handle multiple servers
                         # in discovery server
