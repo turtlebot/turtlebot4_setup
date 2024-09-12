@@ -358,9 +358,10 @@ class RobotUpstart():
                 systemd_after='network-online.target')
 
             turtlebot4_job.symlink = True
-            turtlebot4_job.add(package='turtlebot4_bringup',
-                               filename='launch/{0}.launch.py'.format(
-                               self.conf.get(SystemOptions.MODEL)))
+            turtlebot4_job.add(
+                package='turtlebot4_bringup',
+                filename=f'launch/{self.conf.get(SystemOptions.MODEL)}.launch.py'
+            )
             turtlebot4_job.install()
 
             if self.conf.get(DiscoveryOptions.ENABLED):
