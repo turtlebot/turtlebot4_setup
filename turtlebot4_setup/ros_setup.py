@@ -370,6 +370,8 @@ class RobotUpstart():
 
             self.daemon_reload()
 
+        except KeyError as err:
+            ErrorPrompt(f'Failed to install systemd job:\n{err} is not defined').show()
         except Exception as err:
             ErrorPrompt(f'Failed to install systemd job:\n{err}').show()
 
@@ -391,6 +393,8 @@ class RobotUpstart():
                 discovery_job.uninstall(Provider=TurtleBot4Extras)
 
             self.daemon_reload()
+        except KeyError as err:
+            ErrorPrompt(f'Failed to uninstall existing systemd job:\n{err} is not defined').show()
         except Exception as err:
             ErrorPrompt(f'Failed to uninstall existing systemd job:\n{err}').show()
 
