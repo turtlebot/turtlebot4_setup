@@ -17,6 +17,7 @@
 import copy
 from enum import Enum
 import os
+import re
 import shlex
 import subprocess
 import sys
@@ -333,25 +334,26 @@ class Conf():
                 if v is None:
                     v = ''
                 for i, line in enumerate(bash):
-                    if f'export {k}' in line:
+                    export_re = re.compile(rf'^\s*export\s+{k.value}=.*')
+                    if export_re.match(line):
                         if (k == BashOptions.SUPER_CLIENT and str(v) == 'True'):
                             # Ensure super client is only applied on user terminals
-                            bash[i] = f'[ -t 0 ] && export {k}={v} || export {k}=False\n'
+                            bash[i] = f'[ -t 0 ] && export {k.value}={v} || export {k.value}=False\n'
                         else:
                             # Quotations required around v to handle multiple servers
                             # in discovery server
-                            bash[i] = f'export {k}=\"{v}\"\n'
+                            bash[i] = f'export {k.value}=\"{v}\"\n'
                         found = True
 
                 # If the setting is missing from the setup.bash, add it to the beginning
                 if not found:
                     if (k == BashOptions.SUPER_CLIENT and str(v) == 'True'):
                         # Ensure super client is only applied on user terminals
-                        bash.insert(0, f'[ -t 0 ] && export {k}={v} || export {k}=False\n')
+                        bash.insert(0, f'[ -t 0 ] && export {k.value}={v} || export {k.value}=False\n')
                     else:
                         # Quotations required around v to handle multiple servers
                         # in discovery server
-                        bash.insert(0, f'export {k}=\"{v}\"\n')
+                        bash.insert(0, f'export {k.value}=\"{v}\"\n')
 
         with open('/tmp' + self.setup_bash_file, 'w') as f:
             f.writelines(bash)
