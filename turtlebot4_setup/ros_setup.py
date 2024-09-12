@@ -359,8 +359,8 @@ class RobotUpstart():
 
             turtlebot4_job.symlink = True
             turtlebot4_job.add(package='turtlebot4_bringup',
-                            filename='launch/{0}.launch.py'.format(
-                                self.conf.get(SystemOptions.MODEL)))
+                               filename='launch/{0}.launch.py'.format(
+                               self.conf.get(SystemOptions.MODEL)))
             turtlebot4_job.install()
 
             if self.conf.get(DiscoveryOptions.ENABLED):
