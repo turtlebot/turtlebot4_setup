@@ -53,7 +53,7 @@ body:
         - Select One
         - Ubuntu 20.04
         - Ubuntu 22.04
-        - Ubuntyu 24.04
+        - Ubuntu 24.04
         - Other Linux
         - Windows / MAC
     validations:
