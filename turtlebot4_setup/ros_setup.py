@@ -20,7 +20,7 @@ import subprocess
 
 import robot_upstart
 from turtlebot4_setup.conf import BashOptions, Conf, DiscoveryOptions, SystemOptions
-from turtlebot4_setup.menu import Menu, MenuEntry, OptionsMenu, Prompt
+from turtlebot4_setup.menu import ErrorPrompt, Menu, MenuEntry, OptionsMenu, Prompt
 
 
 __author__ = 'Roni Kreinin'
@@ -371,7 +371,7 @@ class RobotUpstart():
             self.daemon_reload()
 
         except Exception as err:
-            print(f'Failed to install systemd job: {err}')
+            ErrorPrompt(f'Failed to install systemd job:\n{err}').show()
 
     def uninstall(self):
         try:
@@ -392,7 +392,7 @@ class RobotUpstart():
 
             self.daemon_reload()
         except Exception as err:
-            print(f'Failed to uninstall existing systemd job: {err}')
+            ErrorPrompt(f'Failed to uninstall existing systemd job:\n{err}').show()
 
 
 class TurtleBot4Extras(robot_upstart.providers.Generic):

@@ -237,3 +237,20 @@ class PreviewMenu():
 
         highlighted_file_content = highlight(file_content, lexer, formatter)
         return highlighted_file_content
+
+
+class ErrorPrompt(Menu):
+    # Error -- https://patorjk.com/software/taag/#p=display&v=0&f=Small
+    title = """
+  ___
+ | __|_ _ _ _ ___ _ _
+ | _|| '_| '_/ _ \\ '_|
+ |___|_| |_| \\___/_|
+
+"""
+
+    def __init__(self, text: str, display_help_title=True) -> None:
+        if display_help_title:
+            super().__init__(self.title + text, [])
+        else:
+            super().__init__(text, [])
