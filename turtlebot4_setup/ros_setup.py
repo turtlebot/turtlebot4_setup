@@ -341,51 +341,58 @@ class RobotUpstart():
         subprocess.run(shlex.split('sudo systemctl daemon-reload'))
 
     def install(self):
-        self.uninstall()
+        try:
+            self.uninstall()
 
-        rmw = os.environ['RMW_IMPLEMENTATION']
-        if rmw == 'rmw_fastrtps_cpp':
-            rmw_config = os.environ['FASTRTPS_DEFAULT_PROFILES_FILE']
-        else:
-            rmw_config = os.environ['CYCLONEDDS_URI']
+            rmw = os.environ['RMW_IMPLEMENTATION']
+            if rmw == 'rmw_fastrtps_cpp':
+                rmw_config = os.environ['FASTRTPS_DEFAULT_PROFILES_FILE']
+            else:
+                rmw_config = os.environ['CYCLONEDDS_URI']
 
-        turtlebot4_job = robot_upstart.Job(
-            name='turtlebot4',
-            workspace_setup=os.environ['ROBOT_SETUP'],
-            rmw=rmw,
-            rmw_config=rmw_config,
-            systemd_after='network-online.target')
+            turtlebot4_job = robot_upstart.Job(
+                name='turtlebot4',
+                workspace_setup=os.environ['ROBOT_SETUP'],
+                rmw=rmw,
+                rmw_config=rmw_config,
+                systemd_after='network-online.target')
 
-        turtlebot4_job.symlink = True
-        turtlebot4_job.add(package='turtlebot4_bringup',
-                           filename='launch/{0}.launch.py'.format(
-                            self.conf.get(SystemOptions.MODEL)))
-        turtlebot4_job.install()
+            turtlebot4_job.symlink = True
+            turtlebot4_job.add(package='turtlebot4_bringup',
+                            filename='launch/{0}.launch.py'.format(
+                                self.conf.get(SystemOptions.MODEL)))
+            turtlebot4_job.install()
 
-        if self.conf.get(DiscoveryOptions.ENABLED):
-            discovery_job = robot_upstart.Job(workspace_setup=os.environ['ROBOT_SETUP'])
-            discovery_job.install(Provider=TurtleBot4Extras)
-            subprocess.run(shlex.split('sudo systemctl restart discovery.service'))
+            if self.conf.get(DiscoveryOptions.ENABLED):
+                discovery_job = robot_upstart.Job(workspace_setup=os.environ['ROBOT_SETUP'])
+                discovery_job.install(Provider=TurtleBot4Extras)
+                subprocess.run(shlex.split('sudo systemctl restart discovery.service'))
 
-        self.daemon_reload()
+            self.daemon_reload()
+
+        except Exception as err:
+            print(f'Failed to install systemd job: {err}')
 
     def uninstall(self):
-        self.stop()
+        try:
+            self.stop()
 
-        # Uninstall Turtlebot4 Service
-        turtlebot4_job = robot_upstart.Job(
-            name='turtlebot4',
-            workspace_setup=os.environ['ROBOT_SETUP'])
-        turtlebot4_job.uninstall()
+            # Uninstall Turtlebot4 Service
+            turtlebot4_job = robot_upstart.Job(
+                name='turtlebot4',
+                workspace_setup=os.environ['ROBOT_SETUP'])
+            turtlebot4_job.uninstall()
 
-        # Uninstall Discovery Server Service
-        if os.path.exists('/lib/systemd/system/discovery.service'):
-            subprocess.run(shlex.split(
-                'sudo systemctl stop discovery.service'), capture_output=True)
-            discovery_job = robot_upstart.Job(workspace_setup=os.environ['ROBOT_SETUP'])
-            discovery_job.uninstall(Provider=TurtleBot4Extras)
+            # Uninstall Discovery Server Service
+            if os.path.exists('/lib/systemd/system/discovery.service'):
+                subprocess.run(shlex.split(
+                    'sudo systemctl stop discovery.service'), capture_output=True)
+                discovery_job = robot_upstart.Job(workspace_setup=os.environ['ROBOT_SETUP'])
+                discovery_job.uninstall(Provider=TurtleBot4Extras)
 
-        self.daemon_reload()
+            self.daemon_reload()
+        except Exception as err:
+            print(f'Failed to uninstall existing systemd job: {err}')
 
 
 class TurtleBot4Extras(robot_upstart.providers.Generic):
