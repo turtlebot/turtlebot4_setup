@@ -76,7 +76,7 @@ class Conf():
 
     default_system_conf = {
         SystemOptions.MODEL: 'lite',
-        SystemOptions.VERSION: '1.0.0',
+        SystemOptions.VERSION: '2.0.0',
         SystemOptions.ROS: 'Jazzy',
         SystemOptions.HOSTNAME: 'ubuntu',
     }
@@ -203,7 +203,7 @@ class Conf():
                 is_conf = False
                 for k in [SystemOptions.MODEL, SystemOptions.VERSION, SystemOptions.ROS]:
                     if k in line:
-                        system[i] = '{0}:{1}\n'.format(k, self.system_conf[k])
+                        system[i] = f'{k.value}:{self.system_conf[k]}\n'
                         is_conf = True
                         break
 
