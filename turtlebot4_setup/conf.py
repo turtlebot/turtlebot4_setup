@@ -38,6 +38,9 @@ class SystemOptions(str, Enum):
     HOSTNAME = 'HOSTNAME'
     IP = 'IP'
 
+    def __str__(self):
+        return f'{self.value}'
+
 
 class WifiOptions(str, Enum):
     SSID = 'SSID'
@@ -47,6 +50,9 @@ class WifiOptions(str, Enum):
     BAND = 'BAND'
     IP = 'IP'
     DHCP = 'DHCP'
+
+    def __str__(self):
+        return f'{self.value}'
 
 
 class BashOptions(str, Enum):
@@ -60,6 +66,9 @@ class BashOptions(str, Enum):
     WORKSPACE = 'WORKSPACE_SETUP'
     SUPER_CLIENT = 'ROS_SUPER_CLIENT'
 
+    def __str__(self):
+        return f'{self.value}'
+
 
 class DiscoveryOptions(str, Enum):
     ENABLED = 'ENABLED'
@@ -68,6 +77,9 @@ class DiscoveryOptions(str, Enum):
     OFFBOARD_IP = 'OFFBOARD_IP'
     OFFBOARD_PORT = 'OFFBOARD_PORT'
     OFFBOARD_ID = 'OFFBOARD_ID'
+
+    def __str__(self):
+        return f'{self.value}'
 
 
 class Conf():
@@ -203,7 +215,7 @@ class Conf():
                 is_conf = False
                 for k in [SystemOptions.MODEL, SystemOptions.VERSION, SystemOptions.ROS]:
                     if k in line:
-                        system[i] = f'{k.value}:{self.system_conf[k]}\n'
+                        system[i] = f'{k}:{self.system_conf[k]}\n'
                         is_conf = True
                         break
 
@@ -334,26 +346,26 @@ class Conf():
                 if v is None:
                     v = ''
                 for i, line in enumerate(bash):
-                    export_re = re.compile(rf'^\s*export\s+{k.value}=.*')
+                    export_re = re.compile(rf'^\s*export\s+{k}=.*')
                     if export_re.match(line):
                         if (k == BashOptions.SUPER_CLIENT and str(v) == 'True'):
                             # Ensure super client is only applied on user terminals
-                            bash[i] = f'[ -t 0 ] && export {k.value}={v} || export {k.value}=False\n'  # noqa: 501
+                            bash[i] = f'[ -t 0 ] && export {k}={v} || export {k}=False\n'  # noqa: 501
                         else:
                             # Quotations required around v to handle multiple servers
                             # in discovery server
-                            bash[i] = f'export {k.value}=\"{v}\"\n'
+                            bash[i] = f'export {k}=\"{v}\"\n'
                         found = True
 
                 # If the setting is missing from the setup.bash, add it to the beginning
                 if not found:
                     if (k == BashOptions.SUPER_CLIENT and str(v) == 'True'):
                         # Ensure super client is only applied on user terminals
-                        bash.insert(0, f'[ -t 0 ] && export {k.value}={v} || export {k.value}=False\n')  # noqa: 501
+                        bash.insert(0, f'[ -t 0 ] && export {k}={v} || export {k}=False\n')  # noqa: 501
                     else:
                         # Quotations required around v to handle multiple servers
                         # in discovery server
-                        bash.insert(0, f'export {k.value}=\"{v}\"\n')
+                        bash.insert(0, f'export {k}=\"{v}\"\n')
 
         with open('/tmp' + self.setup_bash_file, 'w') as f:
             f.writelines(bash)
