@@ -5,7 +5,7 @@
 
 Help()
 {
-   echo "Create 3 update script for robots running H.1.0 or higher"
+   echo "Create 3 update script for robots running I.*.*"
    echo
    echo "usage: bash create_update.sh /path/to/image.swu [-h]"
    echo "options:"

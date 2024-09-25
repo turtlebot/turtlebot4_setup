@@ -1,3 +1,4 @@
-MODEL:standard
-VERSION:1.0.0
-ROS:Humble
+MODEL:lite
+VERSION:2.0.0
+ROS:Jazzy
+HOSTNAME:ubuntu

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Give ourselves some swap to deal with RAM issues
+if [ -f /swapfile ]; then
+  swapon /swapfile
+fi

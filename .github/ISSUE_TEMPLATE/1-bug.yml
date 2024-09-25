@@ -30,6 +30,7 @@ body:
         - Select One
         - Galactic
         - Humble
+        - Jazzy
     validations:
       required: true
   - type: dropdown
@@ -52,6 +53,7 @@ body:
         - Select One
         - Ubuntu 20.04
         - Ubuntu 22.04
+        - Ubuntu 24.04
         - Other Linux
         - Windows / MAC
     validations:
