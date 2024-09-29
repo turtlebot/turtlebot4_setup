@@ -2,8 +2,8 @@
 Changelog for package turtlebot4_setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.0 (2024-09-28)
+------------------
 * Initial Jazzy implementation
   * Add a note about firmware compatibility to the readme
   * Add exception handling to the file i/o so the node doesn't just crash if we're missing a file
