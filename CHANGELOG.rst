@@ -2,6 +2,37 @@
 Changelog for package turtlebot4_setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Initial Jazzy implementation
+  * Add a note about firmware compatibility to the readme
+  * Add exception handling to the file i/o so the node doesn't just crash if we're missing a file
+  * Add improved exception handling to the wifi settings parser
+  * Update CI
+  * Properly escape all `\` characters in stylized titles, add translation & link to generator page in comments
+  * Add copyright & contribution notices, fix up code formatting, import ordering. Disable linting for some specific lines where appropriate
+  * Add XML namespaces & version to cyclone DDS config
+  * Omit XML linting (for now); it's consistently timing out and failing
+  * Code formatting fixes
+  * Add exception handling to the file preview
+  * Add an option to force the Create3 settings to be reapplied, even if we haven't changed anything else. Always apply the _do_not_use namespace, as we're universally using the republisher now
+  * Remove superfluous concatenation
+  * Enable testing packages for CI
+  * Disable checks on two lines with long format strings
+  * Add exception handling for install & uninstall
+  * Add an error prompt to show errors during installation
+  * Handle KeyErrors separately
+  * Add newline to end of file
+  * Fix indentation
+  * `''.format` -> `f''`
+  * Update the default system file, print the keys instead of the enums
+  * Add a `__str_\_` function to the relevant classes
+* Disable DHCP4 on the built-in ethernet interface, make it non-optional
+* Change the post-install chrony file command from mv to cp
+* Only copy if the file exists
+* Initial Jazzy implementation (`#15 <https://github.com/turtlebot/turtlebot4_setup/issues/15>`_)
+* Contributors: Chris Iverach-Brereton
+
 1.0.4 (2024-07-02)
 ------------------
 * Multi-robot discovery server support (`#11 <https://github.com/turtlebot/turtlebot4_setup/issues/11>`)
