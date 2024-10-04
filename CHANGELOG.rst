@@ -2,6 +2,15 @@
 Changelog for package turtlebot4_setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add a copy of the boot/firmware files to /etc/turtlebot for reference in case users modify these and want a clean, offline copy for reference
+* Add ROBOT_SETUP to setup.bash
+* Add growpart & resize2fs commands to the SD card-flashing script to expand the partition to use up the whole SD card
+* Add socat as a package dependency instead of an ad-hoc post-install package
+* Add MOTD file with the Turtlebot4 logotype
+* Contributors: Chris Iverach-Brereton
+
 2.0.0 (2024-09-28)
 ------------------
 * Initial Jazzy implementation
