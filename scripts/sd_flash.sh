@@ -38,3 +38,9 @@ do
 done
 
 sudo dcfldd if=$1 sizeprobe=if bs=1M$of
+
+for device in $device_names
+do
+    sudo growpart /dev/$device 2
+    sudo resize2fs /dev/${device}p2
+done
