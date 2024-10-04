@@ -41,11 +41,12 @@ ros-jazzy-turtlebot4-robot \
 ros-jazzy-irobot-create-control \
 ros-jazzy-turtlebot4-navigation \
 ros-dev-tools \
-socat \
 network-manager \
 chrony
 
-sudo rm /etc/netplan/50-cloud-init.yaml
+if [ -f /etc/netplan/50-cloud-init.yaml ]; then
+   sudo rm /etc/netplan/50-cloud-init.yaml
+fi
 
 git clone https://github.com/turtlebot/turtlebot4_setup.git -b jazzy && \
 sudo mv turtlebot4_setup/boot/firmware/* /boot/firmware && rm turtlebot4_setup/ -rf

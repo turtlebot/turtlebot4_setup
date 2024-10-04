@@ -16,6 +16,7 @@
   <exec_depend>rmw_fastrtps_cpp</exec_depend>
   <exec_depend>robot_upstart</exec_depend>
   <exec_depend>simple_term_menu_vendor</exec_depend>
+  <exec_depend>socat</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
