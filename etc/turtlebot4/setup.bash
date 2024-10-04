@@ -7,5 +7,6 @@ export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 export TURTLEBOT4_DIAGNOSTICS=1
 export WORKSPACE_SETUP=/opt/ros/jazzy/setup.bash
 export ROS_SUPER_CLIENT=False
+export ROBOT_SETUP=/etc/turtlebot4/setup.bash
 
 source $WORKSPACE_SETUP
