@@ -2,8 +2,8 @@
 Changelog for package turtlebot4_setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.1 (2024-10-04)
+------------------
 * Add a copy of the boot/firmware files to /etc/turtlebot for reference in case users modify these and want a clean, offline copy for reference
 * Add ROBOT_SETUP to setup.bash
 * Add growpart & resize2fs commands to the SD card-flashing script to expand the partition to use up the whole SD card
