@@ -47,6 +47,7 @@ do
         last_partition="${device}2"
     fi
 
+    sudo e2fsck -f /dev/${last_partition}
     sudo growpart /dev/$device 2
     sudo resize2fs /dev/${last_partition}
 done

@@ -1,4 +1,4 @@
 MODEL:lite
-VERSION:2.0.0
+VERSION:2.0.2
 ROS:Jazzy
-HOSTNAME:ubuntu
+HOSTNAME:turtlebot4

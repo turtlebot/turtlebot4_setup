@@ -88,9 +88,9 @@ class Conf():
 
     default_system_conf = {
         SystemOptions.MODEL: 'lite',
-        SystemOptions.VERSION: '2.0.0',
+        SystemOptions.VERSION: '2.0.2',
         SystemOptions.ROS: 'Jazzy',
-        SystemOptions.HOSTNAME: 'ubuntu',
+        SystemOptions.HOSTNAME: 'turtlebot4',
     }
 
     default_wifi_conf = {
