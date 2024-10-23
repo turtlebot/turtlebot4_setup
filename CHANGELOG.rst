@@ -2,6 +2,14 @@
 Changelog for package turtlebot4_setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add e2fsck to SD-flasher script
+* Bump default version numbers
+* Fix default hostname to match released SD card images
+* Append `p2` for `mmcblk` devices, but just `2` for `sd*` devices when expanding the last partition
+* Contributors: Chris Iverach-Brereton
+
 2.0.1 (2024-10-04)
 ------------------
 * Add a copy of the boot/firmware files to /etc/turtlebot for reference in case users modify these and want a clean, offline copy for reference
