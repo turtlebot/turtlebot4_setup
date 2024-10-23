@@ -2,8 +2,8 @@
 Changelog for package turtlebot4_setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.2 (2024-10-23)
+------------------
 * Add e2fsck to SD-flasher script
 * Bump default version numbers
 * Fix default hostname to match released SD card images
