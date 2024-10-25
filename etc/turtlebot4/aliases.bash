@@ -21,3 +21,5 @@ alias turtlebot4-source='source $ROBOT_SETUP'
 # Update all packages
 alias turtlebot4-update='sudo apt update && sudo apt upgrade'
 
+# Re-connect a previously-paired game controller
+alias turtlebot4-connect-controller='bluetoothctl connect $(bt-device -l|grep "Wireless Controller" | grep -o "..:..:..:..:..:..")'
