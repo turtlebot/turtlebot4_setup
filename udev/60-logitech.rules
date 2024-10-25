@@ -1,0 +1,36 @@
+# https://gist.github.com/ulidtko/2599111ce747a4339f246d7c6a89220b
+# Linux udev rule file for Logitech F710 gamepads.
+# Written by: Max <ulidtko@gmail.com> in year 2020.
+# SPDX-License-Identifier: MIT
+#
+# ================================================================================
+# On the gamepad, put the D ↔ X switch into the right, X position ("XInput Mode")!
+# ================================================================================
+#
+# You can test the gamepad using jstest or jstest-gtk.
+# You can test force-feedback (rumble, vibration) using fftest.
+# The "vibration" gamepad button toggles force-feedback, independently from PC.
+#
+# The gamepad works mostly alright -- except axis mapping is borked by default.
+# This udev rules file fixes that:
+#
+#  • Ensure you have /bin/jscal tool on your system.
+#  • Put this file under /etc/udev/rules.d/ and re-plug the usb receiver.
+#
+# lsusb: ID 046d:c21f Logitech, Inc. F710 Wireless Gamepad [XInput Mode]
+
+ACTION=="add", SUBSYSTEM=="input", KERNEL=="js?", ATTRS{name}=="Logitech Gamepad F710", \
+	RUN+="/bin/jscal --set-mappings 8,0,1,3,4,2,5,16,17,0 /dev/$name"
+
+#-- NOTE: I'm running this fine with 2 gamepads and mere name-based matching.
+#-- Use the two below lines instead if you insist on USB VID:PID pair.
+# ACTION=="add", SUBSYSTEM=="input", KERNEL=="js?", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c21f", \
+#	RUN+="/bin/jscal --set-mappings 8,0,1,3,4,2,5,16,17,0 /dev/$name"
+
+#-- To see the complete button/axis map, use: jscal -q /dev/input/js0
+#-- Other diagnostic spells:
+# udevadm monitor # plug/unplug
+# udevadm monitor -a | grep -A20 js0
+# udevadm info /dev/input/js0
+
+#-- Took me freaking 2 hours to get right. Ah yes... games on Linux.
