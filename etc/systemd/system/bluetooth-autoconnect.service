@@ -1,0 +1,13 @@
+# https://github.com/jrouleau/bluetooth-autoconnect
+# MIT License
+
+[Unit]
+Description=Bluetooth autoconnect service
+Before=bluetooth.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/bluetooth-autoconnect -d
+
+[Install]
+WantedBy=bluetooth.service
