@@ -2,6 +2,12 @@
 Changelog for package turtlebot4_setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.5 (2025-01-14)
+------------------
+* Remove dhcp true because it was causing eth0 to lose the static IP (`#17 <https://github.com/turtlebot/turtlebot4_setup/issues/17>`_)
+* Change the post-install chrony file command from mv to cp. Only copy if the file actually exists.
+* Contributors: Chris Iverach-Brereton, Hilary Luo
+
 1.0.4 (2024-07-02)
 ------------------
 * Multi-robot discovery server support (`#11 <https://github.com/turtlebot/turtlebot4_setup/issues/11>`)
