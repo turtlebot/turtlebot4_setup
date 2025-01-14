@@ -38,16 +38,3 @@ do
 done
 
 sudo dcfldd if=$1 sizeprobe=if bs=1M$of
-
-for device in $device_names
-do
-    if [[ $device == mmcblk* ]]; then
-        last_partition="${device}p2"
-    else
-        last_partition="${device}2"
-    fi
-
-    sudo e2fsck -f /dev/${last_partition}
-    sudo growpart /dev/$device 2
-    sudo resize2fs /dev/${last_partition}
-done

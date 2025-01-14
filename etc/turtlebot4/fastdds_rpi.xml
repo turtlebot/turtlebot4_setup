@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<dds xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+<?xml version="1.0" encoding="UTF-8" ?>
+<dds>
     <profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
         <participant profile_name="turtlebot4_default_profile" is_default_profile="true">
             <rtps/>

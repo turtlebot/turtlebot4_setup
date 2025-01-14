@@ -2,53 +2,11 @@
 Changelog for package turtlebot4_setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.2 (2024-10-23)
+1.0.5 (2025-01-14)
 ------------------
-* Add e2fsck to SD-flasher script
-* Bump default version numbers
-* Fix default hostname to match released SD card images
-* Append `p2` for `mmcblk` devices, but just `2` for `sd*` devices when expanding the last partition
-* Contributors: Chris Iverach-Brereton
-
-2.0.1 (2024-10-04)
-------------------
-* Add a copy of the boot/firmware files to /etc/turtlebot for reference in case users modify these and want a clean, offline copy for reference
-* Add ROBOT_SETUP to setup.bash
-* Add growpart & resize2fs commands to the SD card-flashing script to expand the partition to use up the whole SD card
-* Add socat as a package dependency instead of an ad-hoc post-install package
-* Add MOTD file with the Turtlebot4 logotype
-* Contributors: Chris Iverach-Brereton
-
-2.0.0 (2024-09-28)
-------------------
-* Initial Jazzy implementation
-  * Add a note about firmware compatibility to the readme
-  * Add exception handling to the file i/o so the node doesn't just crash if we're missing a file
-  * Add improved exception handling to the wifi settings parser
-  * Update CI
-  * Properly escape all `\` characters in stylized titles, add translation & link to generator page in comments
-  * Add copyright & contribution notices, fix up code formatting, import ordering. Disable linting for some specific lines where appropriate
-  * Add XML namespaces & version to cyclone DDS config
-  * Omit XML linting (for now); it's consistently timing out and failing
-  * Code formatting fixes
-  * Add exception handling to the file preview
-  * Add an option to force the Create3 settings to be reapplied, even if we haven't changed anything else. Always apply the _do_not_use namespace, as we're universally using the republisher now
-  * Remove superfluous concatenation
-  * Enable testing packages for CI
-  * Disable checks on two lines with long format strings
-  * Add exception handling for install & uninstall
-  * Add an error prompt to show errors during installation
-  * Handle KeyErrors separately
-  * Add newline to end of file
-  * Fix indentation
-  * `''.format` -> `f''`
-  * Update the default system file, print the keys instead of the enums
-  * Add a `__str_\_` function to the relevant classes
-* Disable DHCP4 on the built-in ethernet interface, make it non-optional
-* Change the post-install chrony file command from mv to cp
-* Only copy if the file exists
-* Initial Jazzy implementation (`#15 <https://github.com/turtlebot/turtlebot4_setup/issues/15>`_)
-* Contributors: Chris Iverach-Brereton
+* Remove dhcp true because it was causing eth0 to lose the static IP (`#17 <https://github.com/turtlebot/turtlebot4_setup/issues/17>`_)
+* Change the post-install chrony file command from mv to cp. Only copy if the file actually exists.
+* Contributors: Chris Iverach-Brereton, Hilary Luo
 
 1.0.4 (2024-07-02)
 ------------------

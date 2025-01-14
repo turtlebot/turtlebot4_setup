@@ -1,43 +1,22 @@
 #!/usr/bin/env python3
 
-# Copyright 2023 Clearpath Robotics
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import copy
 import os
 import subprocess
 import shlex
 
-from turtlebot4_setup.conf import Conf, SystemOptions, BashOptions, WifiOptions, DiscoveryOptions
+from turtlebot4_setup.wifi import WifiSetup
 from turtlebot4_setup.menu import Menu, MenuEntry, OptionsMenu, Prompt, HelpMenu, PreviewMenu
 from turtlebot4_setup.ros_setup import RosSetup
-from turtlebot4_setup.wifi import WifiSetup
-
-
-__author__ = 'Roni Kreinin'
-__email__ = 'rkreinin@clearpathrobotics.com'
-__copyright__ = 'Copyright © 2023 Clearpath Robotics. All rights reserved.'
-__license__ = 'Apache 2.0'
+from turtlebot4_setup.conf import Conf, SystemOptions, BashOptions, WifiOptions, DiscoveryOptions
 
 
 class Turtlebot4Setup():
-    # TurtleBot4 Setup -- https://patorjk.com/software/taag/#p=display&v=0&f=Small
     title = """
-  _____         _   _     ___      _   _ _    ___      _
+  _____         _   _     ___      _   _ _    ___      _ 
  |_   _|  _ _ _| |_| |___| _ ) ___| |_| | |  / __| ___| |_ _  _ _ __
-   | || || | '_|  _| / -_) _ \\/ _ \\  _|_  _| \\__ \\/ -_)  _| || | '_ \\
-   |_| \\_,_|_|  \\__|_\\___|___/\\___/\\__| |_|  |___/\\___|\\__|\\_,_| .__/
+   | || || | '_|  _| / -_) _ \/ _ \  _|_  _| \__ \/ -_)  _| || | '_ \\
+   |_| \_,_|_|  \__|_\___|___/\___/\__| |_|  |___/\___|\__|\_,_| .__/
                                                                |_|
 """
 
@@ -52,7 +31,6 @@ class Turtlebot4Setup():
                         MenuEntry('', None),
                         MenuEntry(entry='View Settings', function=self.view_settings),
                         MenuEntry(entry='Apply Settings', function=self.apply_settings),
-                        MenuEntry(entry='Reset Create3', function=self.apply_create3),
                         MenuEntry('', None),
                         MenuEntry(entry='About', function=self.about),
                         MenuEntry(entry='Help', function=self.help),
@@ -68,7 +46,7 @@ class Turtlebot4Setup():
 
         if o.show() == 'Yes':
             subprocess.run(shlex.split('sudo apt update'))
-            subprocess.run(shlex.split('sudo apt install ros-jazzy-turtlebot4-setup'))
+            subprocess.run(shlex.split('sudo apt install ros-humble-turtlebot4-setup'))
             input()
 
     def view_settings(self):
@@ -124,12 +102,11 @@ class Turtlebot4Setup():
 
         if text == '':
             text = 'No changes made.\n'
-        # Apply Settings -- https://patorjk.com/software/taag/#p=display&v=0&f=Small
         text = """
-    _             _        ___      _   _   _
-   /_\\  _ __ _ __| |_  _  / __| ___| |_| |_(_)_ _  __ _ ___
-  / _ \\| '_ \\ '_ \\ | || | \\__ \\/ -_)  _|  _| | ' \\/ _` (_-<
- /_/ \\_\\ .__/ .__/_|\\_, | |___/\\___|\\__|\\__|_|_||_\\__, /__/
+    _             _        ___      _   _   _              
+   /_\  _ __ _ __| |_  _  / __| ___| |_| |_(_)_ _  __ _ ___
+  / _ \| '_ \ '_ \ | || | \__ \/ -_)  _|  _| | ' \/ _` (_-<
+ /_/ \_\ .__/ .__/_|\_, | |___/\___|\__|\__|_|_||_\__, /__/
        |_|  |_|     |__/                          |___/    \n\n""" + text
 
         text += '\nApply these settings?\n'
@@ -173,9 +150,63 @@ class Turtlebot4Setup():
                 reinstall_job = True
 
         if update_create3:
-            (error, result) = self.update_create3()
-            if error:
-                return (error, result)
+            ros_domain_id = 'ros_domain_id=' + os.environ[BashOptions.DOMAIN_ID]
+            ros_namespace = '&ros_namespace=' + os.environ[BashOptions.NAMESPACE]
+            if self.conf.get(DiscoveryOptions.ENABLED):
+                # TODO(hilary-luo): Should be moved out of the if statement when the republisher is used for simple discovery
+                ros_namespace += '/_do_not_use'
+            rmw_implementation = '&rmw_implementation=' + os.environ[BashOptions.RMW]
+
+            discovery_server = f'&fast_discovery_server_value={self.conf.get_create3_server_str()}'
+
+            create3_rmw_profile = 'config='
+            if self.conf.get(DiscoveryOptions.ENABLED):
+                discovery_server_enabled = '&fast_discovery_server_enabled'
+                create3_rmw_profile_file = os.path.join(self.conf.setup_dir, 'fastdds_discovery_create3.xml')
+                with open(create3_rmw_profile_file) as f:
+                    create3_rmw_profile += f.read()
+            else:
+                discovery_server_enabled = ''
+
+            command = shlex.split(
+                'curl -d "{0}{1}{2}{3}{4}"'.format(ros_domain_id,
+                                                   ros_namespace,
+                                                   rmw_implementation,
+                                                   discovery_server,
+                                                   discovery_server_enabled)) + \
+                shlex.split('-X POST http://192.168.186.2/ros-config-save-main')
+
+            result = subprocess.run(command, capture_output=True)
+
+            # If the curl command fails then return and do not set any more settings.
+            if (result.returncode != 0):
+                return (result.returncode, "Error writing ROS settings to Create3\n\n" + result.stderr.decode("utf-8"))
+
+            # Set create3 rmw profile
+            command = shlex.split(f'curl -d {shlex.quote(create3_rmw_profile)} -X POST http://192.168.186.2/rmw-profile-override-save')
+            
+            result = subprocess.run(command, capture_output=True)
+
+            # If the curl command fails then return and indicate the error.
+            if (result.returncode != 0):
+                return (result.returncode, "Error writing RMW XML Profile to Create3\n\n" + result.stderr.decode("utf-8"))
+
+            # Set time syncing to Raspberry PI
+            config = f'config=server 192.168.186.3 prefer iburst minpoll 4 maxpoll 6  # Use RPi4 server'
+            command = shlex.split(f'curl -d "{config}" -X POST http://192.168.186.2/beta-ntp-conf-save')
+            
+            result = subprocess.run(command, capture_output=True)
+
+            # If the curl command fails then return and indicate the error.
+            if (result.returncode != 0):
+                return (result.returncode, "Error writing NTP settings to Create3\n\n" + result.stderr.decode("utf-8"))
+
+            # Reboot the Create3
+            result = subprocess.run(shlex.split('curl -X POST http://192.168.186.2/api/reboot'), capture_output=True)
+
+            # If the curl command fails then return and indicate the error.
+            if (result.returncode != 0):
+                return (result.returncode, "Error requesting Create3 to reboot\n\n" + result.stderr.decode("utf-8"))
 
         if reinstall_job:
             self.ros.robot_upstart_menu.install()
@@ -188,92 +219,6 @@ class Turtlebot4Setup():
         if len(self.get_settings_diff(WifiOptions)) > 0:
             subprocess.run(shlex.split('sudo netplan apply'))
             os.system('sudo reboot')
-
-    def create3_diff(self):
-        # Reset Create3 -- https://patorjk.com/software/taag/#p=display&v=0&f=Small
-        text = """
-  ___             _      ___              _       ____
- | _ \\___ ___ ___| |_   / __|_ _ ___ __ _| |_ ___|__ /
- |   / -_|_-</ -_)  _| | (__| '_/ -_) _` |  _/ -_)|_ \\
- |_|_\\___/__/\\___|\\__|  \\___|_| \\___\\__,_|\\__\\___|___/\n\n"""
-
-        text += '\nReset Create3?\n'
-
-        text += '\n**Notes**\n'
-        text += '- ROS_DOMAIN_ID, ROBOT_NAMESPACE, RMW_IMPLEMENTATION will be\n'
-        text += '  reapplied to the Create3.'
-
-        return text
-
-    def apply_create3(self):
-        apply_menu = OptionsMenu(self.create3_diff, ['Yes', 'No'], default_option='No')
-        if apply_menu.show() == 'Yes':
-            error, msg = self.update_create3()
-            if error:
-                options = OptionsMenu(title='Error: Unable to set Create3 options.' +
-                                      'Please ensure that the Create3 is fully booted and apply again.\n\n Details:\n' + msg,
-                          menu_entries=['Okay'])
-                options.show()
-                return
-
-    def update_create3(self):
-        ros_domain_id = 'ros_domain_id=' + os.environ[BashOptions.DOMAIN_ID]
-        ros_namespace = '&ros_namespace=' + os.environ[BashOptions.NAMESPACE]
-        ros_namespace += '/_do_not_use'
-        rmw_implementation = '&rmw_implementation=' + os.environ[BashOptions.RMW]
-
-        discovery_server = f'&fast_discovery_server_value={self.conf.get_create3_server_str()}'
-
-        create3_rmw_profile = 'config='
-        if self.conf.get(DiscoveryOptions.ENABLED):
-            discovery_server_enabled = '&fast_discovery_server_enabled'
-            create3_rmw_profile_file = os.path.join(self.conf.setup_dir, 'fastdds_discovery_create3.xml')
-            with open(create3_rmw_profile_file) as f:
-                create3_rmw_profile += f.read()
-        else:
-            discovery_server_enabled = ''
-
-        command = shlex.split(
-            'curl -d "{0}{1}{2}{3}{4}"'.format(ros_domain_id,
-                                                ros_namespace,
-                                                rmw_implementation,
-                                                discovery_server,
-                                                discovery_server_enabled)) + \
-            shlex.split('-X POST http://192.168.186.2/ros-config-save-main')
-
-        result = subprocess.run(command, capture_output=True)
-
-        # If the curl command fails then return and do not set any more settings.
-        if (result.returncode != 0):
-            return (result.returncode, "Error writing ROS settings to Create3\n\n" + result.stderr.decode("utf-8"))
-
-        # Set create3 rmw profile
-        command = shlex.split(f'curl -d {shlex.quote(create3_rmw_profile)} -X POST http://192.168.186.2/rmw-profile-override-save')
-
-        result = subprocess.run(command, capture_output=True)
-
-        # If the curl command fails then return and indicate the error.
-        if (result.returncode != 0):
-            return (result.returncode, "Error writing RMW XML Profile to Create3\n\n" + result.stderr.decode("utf-8"))
-
-        # Set time syncing to Raspberry PI
-        config = f'config=server 192.168.186.3 prefer iburst minpoll 4 maxpoll 6  # Use RPi4 server'
-        command = shlex.split(f'curl -d "{config}" -X POST http://192.168.186.2/beta-ntp-conf-save')
-
-        result = subprocess.run(command, capture_output=True)
-
-        # If the curl command fails then return and indicate the error.
-        if (result.returncode != 0):
-            return (result.returncode, "Error writing NTP settings to Create3\n\n" + result.stderr.decode("utf-8"))
-
-        # Reboot the Create3
-        result = subprocess.run(shlex.split('curl -X POST http://192.168.186.2/api/reboot'), capture_output=True)
-
-        # If the curl command fails then return and indicate the error.
-        if (result.returncode != 0):
-            return (result.returncode, "Error requesting Create3 to reboot\n\n" + result.stderr.decode("utf-8"))
-
-        return (0, 'Success')
 
     def run(self):
         self.menu.show()

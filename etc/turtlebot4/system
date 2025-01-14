@@ -1,4 +1,3 @@
-MODEL:lite
-VERSION:2.0.2
-ROS:Jazzy
-HOSTNAME:turtlebot4
+MODEL:standard
+VERSION:1.0.0
+ROS:Humble

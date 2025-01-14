@@ -5,8 +5,7 @@ network:
         eth0:
             addresses:
             - 192.168.185.3/24
-            dhcp4: false
-            optional: false
+            optional: true
         usb0:
             addresses:
             - 192.168.186.3/24

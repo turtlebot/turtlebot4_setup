@@ -116,7 +116,7 @@ do
   # Prompt the user to offer the ability to correct the last server info or add additional servers
   while [ 1 ]
   do
-    read -p "Re-enter the last server (r), add another server (a), or done (d): " option
+    read -p "Re-enter the last server (r), add another server (a), or done (d): " option 
     if [[ $option =~ ^[r,R].* ]];
     then
       echo "Removing last server entry, re-enter the correct server information"
@@ -173,7 +173,7 @@ sudo mkdir -p /etc/turtlebot4_discovery/
 
 # Create setup.bash file
 setup_file_temp="/tmp/turtlebot4_discovery_setup.bash"
-echo "source /opt/ros/jazzy/setup.bash" > $setup_file_temp
+echo "source /opt/ros/humble/setup.bash" > $setup_file_temp
 echo "export RMW_IMPLEMENTATION=rmw_fastrtps_cpp" >> $setup_file_temp
 echo "[ -t 0 ] && export ROS_SUPER_CLIENT=True || export ROS_SUPER_CLIENT=False" >> $setup_file_temp
 

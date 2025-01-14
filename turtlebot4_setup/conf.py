@@ -1,34 +1,10 @@
-#!/usr/bin/env python3
-
-# Copyright 2023 Clearpath Robotics
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import copy
-from enum import Enum
 import os
-import re
-import shlex
-import subprocess
-import sys
-
 import yaml
+import subprocess
+import shlex
 
-
-__author__ = 'Roni Kreinin'
-__email__ = 'rkreinin@clearpathrobotics.com'
-__copyright__ = 'Copyright © 2023 Clearpath Robotics. All rights reserved.'
-__license__ = 'Apache 2.0'
+from enum import Enum
 
 
 class SystemOptions(str, Enum):
@@ -37,9 +13,6 @@ class SystemOptions(str, Enum):
     ROS = 'ROS'
     HOSTNAME = 'HOSTNAME'
     IP = 'IP'
-
-    def __str__(self):
-        return f'{self.value}'
 
 
 class WifiOptions(str, Enum):
@@ -50,9 +23,6 @@ class WifiOptions(str, Enum):
     BAND = 'BAND'
     IP = 'IP'
     DHCP = 'DHCP'
-
-    def __str__(self):
-        return f'{self.value}'
 
 
 class BashOptions(str, Enum):
@@ -66,9 +36,6 @@ class BashOptions(str, Enum):
     WORKSPACE = 'WORKSPACE_SETUP'
     SUPER_CLIENT = 'ROS_SUPER_CLIENT'
 
-    def __str__(self):
-        return f'{self.value}'
-
 
 class DiscoveryOptions(str, Enum):
     ENABLED = 'ENABLED'
@@ -78,9 +45,6 @@ class DiscoveryOptions(str, Enum):
     OFFBOARD_PORT = 'OFFBOARD_PORT'
     OFFBOARD_ID = 'OFFBOARD_ID'
 
-    def __str__(self):
-        return f'{self.value}'
-
 
 class Conf():
     setup_dir = '/etc/turtlebot4/'
@@ -88,9 +52,9 @@ class Conf():
 
     default_system_conf = {
         SystemOptions.MODEL: 'lite',
-        SystemOptions.VERSION: '2.0.2',
-        SystemOptions.ROS: 'Jazzy',
-        SystemOptions.HOSTNAME: 'turtlebot4',
+        SystemOptions.VERSION: '1.0.0',
+        SystemOptions.ROS: 'Humble',
+        SystemOptions.HOSTNAME: 'ubuntu',
     }
 
     default_wifi_conf = {
@@ -111,7 +75,7 @@ class Conf():
         BashOptions.DISCOVERY_SERVER: None,
         BashOptions.RMW: 'rmw_fastrtps_cpp',
         BashOptions.DIAGNOSTICS: '1',
-        BashOptions.WORKSPACE: '/opt/ros/jazzy/setup.bash',
+        BashOptions.WORKSPACE: '/opt/ros/humble/setup.bash',
         BashOptions.SUPER_CLIENT: False
     }
 
@@ -152,7 +116,7 @@ class Conf():
             return self.discovery_conf.get(conf)
         return None
 
-    def set(self, conf, value):  # noqa: A003
+    def set(self, conf, value):
         if isinstance(conf, SystemOptions):
             self.system_conf[conf] = value
         elif isinstance(conf, WifiOptions):
@@ -173,25 +137,16 @@ class Conf():
             self.discovery_conf = copy.deepcopy(self.default_discovery_conf)
 
     def read(self):
-        try:
-            self.read_system()
-            self.read_wifi()
-            self.read_bash()
-            # Must come after read_bash in order to have the discovery server envar
-            self.read_discovery()
-        except Exception as err:
-            print(f'Error reading configuration: {err}. Terminating')
-            sys.exit(1)
+        self.read_system()
+        self.read_wifi()
+        self.read_bash()
+        self.read_discovery()  # Must come after read_bash in order to have the discovery server envar
 
     def write(self):
-        try:
-            self.write_system()
-            self.write_wifi()
-            self.write_discovery()
-            self.write_bash()
-        except Exception as err:
-            print(f'Error writing configuration: {err}. Configuration may be incomplete')
-            sys.exit(1)
+        self.write_system()
+        self.write_wifi()
+        self.write_discovery()
+        self.write_bash()
 
     def read_system(self):
         with open(self.system_file, 'r') as f:
@@ -215,7 +170,7 @@ class Conf():
                 is_conf = False
                 for k in [SystemOptions.MODEL, SystemOptions.VERSION, SystemOptions.ROS]:
                     if k in line:
-                        system[i] = f'{k}:{self.system_conf[k]}\n'
+                        system[i] = '{0}:{1}\n'.format(k, self.system_conf[k])
                         is_conf = True
                         break
 
@@ -231,42 +186,36 @@ class Conf():
         subprocess.run(shlex.split('sudo mv /tmp' + self.hostname_file + ' ' + self.hostname_file))
 
     def read_wifi(self):
-        try:
-            # Try to open the existing wifi configuration, but if it doesn't exist we can carry on
-            netplan = yaml.load(open(self.netplan_wifis_file, 'r'), yaml.SafeLoader)
+        netplan = yaml.load(open(self.netplan_wifis_file, 'r'), yaml.SafeLoader)
+        # wlan0 Config
+        wlan0 = netplan['network']['wifis']['wlan0']
 
-            # wlan0 Config
-            wlan0 = netplan['network']['wifis']['wlan0']
+        # Get SSID
+        self.set(WifiOptions.SSID, list(wlan0['access-points'])[0])
+        # SSID settings
+        ssid_settings = wlan0['access-points'][self.get(WifiOptions.SSID)]
 
-            # Get SSID
-            self.set(WifiOptions.SSID, list(wlan0['access-points'])[0])
-            # SSID settings
-            ssid_settings = wlan0['access-points'][self.get(WifiOptions.SSID)]
+        self.set(WifiOptions.PASSWORD, ssid_settings.get('password'))
 
-            self.set(WifiOptions.PASSWORD, ssid_settings.get('password'))
+        if wlan0.get('addresses'):
+            self.set(WifiOptions.IP, wlan0['addresses'][0])
+        else:
+            self.set(WifiOptions.IP, None)
 
-            if wlan0.get('addresses'):
-                self.set(WifiOptions.IP, wlan0['addresses'][0])
-            else:
-                self.set(WifiOptions.IP, None)
+        if wlan0.get('dhcp4') is True:
+            self.set(WifiOptions.DHCP, True)
+        else:
+            self.set(WifiOptions.DHCP, False)
 
-            if wlan0.get('dhcp4') is True:
-                self.set(WifiOptions.DHCP, True)
-            else:
-                self.set(WifiOptions.DHCP, False)
+        if ssid_settings.get('mode') == 'ap':
+            self.set(WifiOptions.WIFI_MODE, 'Access Point')
+        else:
+            self.set(WifiOptions.WIFI_MODE, 'Client')
 
-            if ssid_settings.get('mode') == 'ap':
-                self.set(WifiOptions.WIFI_MODE, 'Access Point')
-            else:
-                self.set(WifiOptions.WIFI_MODE, 'Client')
-
-            if ssid_settings.get('band'):
-                self.set(WifiOptions.BAND, ssid_settings.get('band'))
-            else:
-                self.set(WifiOptions.BAND, 'Any')
-        except Exception:
-            # If the wifi configuration doesn't have a wlan0 configuration, just skip this
-            pass
+        if ssid_settings.get('band'):
+            self.set(WifiOptions.BAND, ssid_settings.get('band'))
+        else:
+            self.set(WifiOptions.BAND, 'Any')
 
     def write_wifi(self):
         ssid = self.get(WifiOptions.SSID)
@@ -306,7 +255,7 @@ class Conf():
         }
 
         with open('/tmp' + self.netplan_wifis_file, 'w') as f:
-            f.write('# This file was automatically created by the turtlebot4-setup tool and should not be manually modified\n\n')  # noqa: E501
+            f.write('# This file was automatically created by the turtlebot4-setup tool and should not be manually modified\n\n')
 
         yaml.dump(netplan,
                   stream=open('/tmp' + self.netplan_wifis_file, 'a'),
@@ -315,8 +264,7 @@ class Conf():
                   default_flow_style=False,
                   default_style=None)
 
-        subprocess.run(shlex.split(
-            'sudo mv /tmp' + self.netplan_wifis_file + ' ' + self.netplan_wifis_file))
+        subprocess.run(shlex.split('sudo mv /tmp' + self.netplan_wifis_file + ' ' + self.netplan_wifis_file))
 
     def read_bash(self):
         with open(self.setup_bash_file, 'r') as f:
@@ -346,14 +294,12 @@ class Conf():
                 if v is None:
                     v = ''
                 for i, line in enumerate(bash):
-                    export_re = re.compile(rf'^\s*export\s+{k}=.*')
-                    if export_re.match(line):
+                    if f'export {k}' in line:
                         if (k == BashOptions.SUPER_CLIENT and str(v) == 'True'):
                             # Ensure super client is only applied on user terminals
-                            bash[i] = f'[ -t 0 ] && export {k}={v} || export {k}=False\n'  # noqa: 501
+                            bash[i] = f'[ -t 0 ] && export {k}={v} || export {k}=False\n'
                         else:
-                            # Quotations required around v to handle multiple servers
-                            # in discovery server
+                            # Quotations required around v to handle multiple servers in discovery server
                             bash[i] = f'export {k}=\"{v}\"\n'
                         found = True
 
@@ -361,15 +307,14 @@ class Conf():
                 if not found:
                     if (k == BashOptions.SUPER_CLIENT and str(v) == 'True'):
                         # Ensure super client is only applied on user terminals
-                        bash.insert(0, f'[ -t 0 ] && export {k}={v} || export {k}=False\n')  # noqa: 501
+                        bash.insert(0,f'[ -t 0 ] && export {k}={v} || export {k}=False\n')
                     else:
-                        # Quotations required around v to handle multiple servers
-                        # in discovery server
-                        bash.insert(0, f'export {k}=\"{v}\"\n')
+                        # Quotations required around v to handle multiple servers in discovery server
+                        bash.insert(0,f'export {k}=\"{v}\"\n')
 
         with open('/tmp' + self.setup_bash_file, 'w') as f:
             f.writelines(bash)
-        subprocess.run(shlex.split(f'sudo mv /tmp{self.setup_bash_file} {self.setup_bash_file}'))
+        subprocess.run(shlex.split('sudo mv /tmp' + self.setup_bash_file + ' ' + self.setup_bash_file))
 
         for k, v in self.bash_conf.items():
             if v is None:
@@ -399,11 +344,10 @@ class Conf():
                             self.set(DiscoveryOptions.OFFBOARD_ID, i)
                             self.set(DiscoveryOptions.OFFBOARD_IP, server[0].strip('\'"'))
                             if len(server) > 1:
-                                self.set(
-                                    DiscoveryOptions.OFFBOARD_PORT, int(server[1].strip('\'"')))
+                                self.set(DiscoveryOptions.OFFBOARD_PORT, int(server[1].strip('\'"')))
                             else:
                                 self.set(DiscoveryOptions.OFFBOARD_PORT, 11811)
-            except Exception:
+            except:
                 self.discovery_conf = self.default_discovery_conf
 
     def write_discovery(self):
@@ -414,11 +358,10 @@ class Conf():
 
             with open('/tmp' + self.discovery_sh_file, 'w') as f:
                 f.write('#!/bin/bash\n')
-                f.write('# This file was automatically created by the turtlebot4-setup tool and should not be manually modified\n\n')  # noqa: E501
+                f.write('# This file was automatically created by the turtlebot4-setup tool and should not be manually modified\n\n')
                 f.write(f'source {self.get(BashOptions.WORKSPACE)}\n')
-                f.write(f'fastdds discovery -i {self.get(DiscoveryOptions.SERVER_ID)} -p {self.get(DiscoveryOptions.PORT)}')  # noqa: E501
-            subprocess.run(shlex.split(
-                'sudo mv /tmp' + self.discovery_sh_file + ' ' + self.discovery_sh_file))
+                f.write(f'fastdds discovery -i {self.get(DiscoveryOptions.SERVER_ID)} -p {self.get(DiscoveryOptions.PORT)}')
+            subprocess.run(shlex.split('sudo mv /tmp' + self.discovery_sh_file + ' ' + self.discovery_sh_file))
         else:
             self.set(BashOptions.DISCOVERY_SERVER, None)
             self.set(BashOptions.SUPER_CLIENT, False)
@@ -450,7 +393,7 @@ class Conf():
             discovery_str += f"{s['ip']}:{s['port']};"
             i += 1
         return discovery_str
-
+    
     def get_create3_server_str(self) -> str:
         # Create3 should only point at the local server on the pi
         discovery_str = ''

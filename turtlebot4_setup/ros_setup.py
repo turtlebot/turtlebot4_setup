@@ -1,42 +1,21 @@
-#!/usr/bin/env python3
-
-# Copyright 2023 Clearpath Robotics
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+from turtlebot4_setup.menu import Menu, OptionsMenu, MenuEntry, Prompt
+from turtlebot4_setup.conf import Conf, SystemOptions, BashOptions, DiscoveryOptions
 
 import os
-import shlex
-import subprocess
+
+import subprocess, shlex
 
 import robot_upstart
-from turtlebot4_setup.conf import BashOptions, Conf, DiscoveryOptions, SystemOptions
-from turtlebot4_setup.menu import ErrorPrompt, Menu, MenuEntry, OptionsMenu, Prompt
-
-
-__author__ = 'Roni Kreinin'
-__email__ = 'rkreinin@clearpathrobotics.com'
-__copyright__ = 'Copyright © 2023 Clearpath Robotics. All rights reserved.'
-__license__ = 'Apache 2.0'
 
 
 class RosSetup():
-    # ROS Setup -- https://patorjk.com/software/taag/#p=display&v=0&f=Small
+
     title = """
-  ___  ___  ___   ___      _
- | _ \\/ _ \\/ __| / __| ___| |_ _  _ _ __
- |   / (_) \\__ \\ \\__ \\/ -_)  _| || | '_ \\
- |_|_\\\\___/|___/ |___/\\___|\\__|\\_,_| .__/
-                                   |_|
+  ___  ___  ___   ___      _  
+ | _ \/ _ \/ __| / __| ___| |_ _  _ _ __ 
+ |   / (_) \__ \ \__ \/ -_)  _| || | '_ \\
+ |_|_\\\___/|___/ |___/\\___|\\__|\\_,_| .__/
+                                   |_| 
 """
 
     setup_dir = '/etc/turtlebot4/'
@@ -59,13 +38,13 @@ class RosSetup():
 
 
 class BashSetup():
-    # Bash Setup -- https://patorjk.com/software/taag/#p=display&v=0&f=Small
+
     title = """
-  ___          _      ___      _
- | _ ) __ _ __| |_   / __| ___| |_ _  _ _ __
- | _ \\/ _` (_-< ' \\  \\__ \\/ -_)  _| || | '_ \\
- |___/\\__,_/__/_||_| |___/\\___|\\__|\\_,_| .__/
-                                       |_|
+  ___          _      ___      _             
+ | _ ) __ _ __| |_   / __| ___| |_ _  _ _ __ 
+ | _ \/ _` (_-< ' \  \__ \/ -_)  _| || | '_ \\
+ |___/\__,_/__/_||_| |___/\___|\__|\_,_| .__/
+                                       |_|       
 """
 
     def __init__(self, conf: Conf) -> None:
@@ -120,7 +99,7 @@ class BashSetup():
                    default_response=self.conf.get(BashOptions.DOMAIN_ID),
                    response_type=int,
                    note='ROS Domain ID (0-101) or (215-232)')
-        domain_id = p.show()
+        domain_id = p.show()        
         domain_id = max(0, min(int(domain_id), 232))
         if (domain_id > 101 and domain_id < 215):
             domain_id = 101
@@ -159,15 +138,14 @@ class BashSetup():
                    note='ROS2 namespace')
         # Add '/' if needed
         ns = p.show()
-        if ns is not None and ns[0] != '/':
+        if ns != None and ns[0] != '/':
             ns = '/' + ns
         self.conf.set(BashOptions.NAMESPACE, ns)
 
     def set_turtlebot4_diagnostics(self):
-        options = OptionsMenu(
-            title=BashOptions.DIAGNOSTICS,
-            menu_entries=['Enabled', 'Disabled'],
-            default_option='Enabled' if self.conf.get(BashOptions.DIAGNOSTICS) == '1' else 'Disabled')  # noqa: E501
+        options = OptionsMenu(title=BashOptions.DIAGNOSTICS,
+                              menu_entries=['Enabled', 'Disabled'],
+                              default_option='Enabled' if self.conf.get(BashOptions.DIAGNOSTICS) == '1' else 'Disabled')
         self.conf.set(BashOptions.DIAGNOSTICS, '1' if options.show() == 'Enabled' else '0')
 
     def save_settings(self):
@@ -179,40 +157,32 @@ class BashSetup():
 
 
 class DiscoveryServer():
-    # Discovery Server -- https://patorjk.com/software/taag/#p=display&v=0&f=Small
     title = """
-  ___  _                               ___
- |   \\(_)___ __ _____ _____ _ _ _  _  / __| ___ _ ___ _____ _ _
- | |) | (_-</ _/ _ \\ V / -_) '_| || | \\__ \\/ -_) '_\\ V / -_) '_|
- |___/|_/__/\\__\\___/\\_/\\___|_|  \\_, | |___/\\___|_|  \\_/\\___|_|
-                                |__/
+  ___  _                               ___       
+ |   \(_)___ __ _____ _____ _ _ _  _  / __| ___ _ ___ _____ _ _
+ | |) | (_-</ _/ _ \ V / -_) '_| || | \__ \/ -_) '_\ V / -_) '_|
+ |___/|_/__/\__\___/\_/\___|_|  \_, | |___/\___|_|  \_/\___|_|
+                                |__/                          
 """
 
     def __init__(self, configs: Conf) -> None:
         self.conf = configs
 
-        self.entries = [
-            MenuEntry(
-                entry=self.format_entry('Enabled', DiscoveryOptions.ENABLED),
-                function=self.set_enabled),
-            MenuEntry(
-                entry=self.format_entry('Onboard Server - Port', DiscoveryOptions.PORT),
-                function=self.set_port),
-            MenuEntry(
-                entry=self.format_entry('Onboard Server - Server ID', DiscoveryOptions.SERVER_ID),
-                function=self.set_server_id),
-            MenuEntry(
-                entry=self.format_entry('Offboard Server - IP', DiscoveryOptions.OFFBOARD_IP),
-                function=self.set_offboard_ip),
-            MenuEntry(
-                entry=self.format_entry('Offboard Server - Port', DiscoveryOptions.OFFBOARD_PORT),
-                function=self.set_offboard_port),
-            MenuEntry(
-                entry=self.format_entry('Offboard Server - Server ID', DiscoveryOptions.OFFBOARD_ID),  # noqa: E501
-                function=self.set_offboard_server_id),
-            MenuEntry('', None),
-            MenuEntry(entry='Apply Defaults', function=self.apply_defaults),
-            MenuEntry(entry='Save', function=self.save_settings)]
+        self.entries = [MenuEntry(entry=self.format_entry('Enabled', DiscoveryOptions.ENABLED),
+                                  function=self.set_enabled),
+                        MenuEntry(entry=self.format_entry('Onboard Server - Port', DiscoveryOptions.PORT),
+                                  function=self.set_port),
+                        MenuEntry(entry=self.format_entry('Onboard Server - Server ID', DiscoveryOptions.SERVER_ID),
+                                  function=self.set_server_id),
+                        MenuEntry(entry=self.format_entry('Offboard Server - IP', DiscoveryOptions.OFFBOARD_IP),
+                                  function=self.set_offboard_ip),
+                        MenuEntry(entry=self.format_entry('Offboard Server - Port', DiscoveryOptions.OFFBOARD_PORT),
+                                  function=self.set_offboard_port),
+                        MenuEntry(entry=self.format_entry('Offboard Server - Server ID', DiscoveryOptions.OFFBOARD_ID),
+                                  function=self.set_offboard_server_id),
+                        MenuEntry('', None),
+                        MenuEntry(entry='Apply Defaults', function=self.apply_defaults),
+                        MenuEntry(entry='Save', function=self.save_settings)]
 
         self.menu = Menu(title=self.title, menu_entries=self.entries)
 
@@ -247,7 +217,7 @@ class DiscoveryServer():
                    note='Onboard Discovery Server ID (0-255)')
         server_id = p.show()
         server_id = max(0, min(int(server_id), 255))
-        if (self.conf.get(DiscoveryOptions.OFFBOARD_IP) and (server_id == int(self.conf.get(DiscoveryOptions.OFFBOARD_ID)))):  # noqa: 501
+        if (self.conf.get(DiscoveryOptions.OFFBOARD_IP) and (server_id == int(self.conf.get(DiscoveryOptions.OFFBOARD_ID)))):
             return
         self.conf.set(DiscoveryOptions.SERVER_ID, server_id)
 
@@ -275,7 +245,7 @@ class DiscoveryServer():
         p = Prompt(prompt='Server ID [{0}]: '.format(self.conf.get(DiscoveryOptions.OFFBOARD_ID)),
                    default_response=self.conf.get(DiscoveryOptions.OFFBOARD_ID),
                    response_type=int,
-                   note='Offboard Discovery Server ID (0-255) - Cannot be the same as the onboard server')  # noqa: 501
+                   note='Offboard Discovery Server ID (0-255) - Cannot be the same as the onboard server')
         server_id = p.show()
         server_id = max(0, min(int(server_id), 255))
         if (server_id == int(self.conf.get(DiscoveryOptions.SERVER_ID))):
@@ -291,13 +261,13 @@ class DiscoveryServer():
 
 
 class RobotUpstart():
-    # Robot Upstart -- https://patorjk.com/software/taag/#p=display&v=0&f=Small
+
     title = """
-  ___     _         _     _   _         _            _
- | _ \\___| |__  ___| |_  | | | |_ __ __| |_ __ _ _ _| |_
- |   / _ \\ '_ \\/ _ \\  _| | |_| | '_ (_-<  _/ _` | '_|  _|
- |_|_\\___/_.__/\\___/\\__|  \\___/| .__/__/\\__\\__,_|_|  \\__|
-                               |_|
+  ___     _         _     _   _         _            _   
+ | _ \___| |__  ___| |_  | | | |_ __ __| |_ __ _ _ _| |_ 
+ |   / _ \ '_ \/ _ \  _| | |_| | '_ (_-<  _/ _` | '_|  _|
+ |_|_\___/_.__/\___/\__|  \___/| .__/__/\__\__,_|_|  \__|
+                               |_|                      
 """
 
     def __init__(self, configs: Conf) -> None:
@@ -312,8 +282,7 @@ class RobotUpstart():
                                   function=self.install),
                         MenuEntry(entry='Uninstall',
                                   function=self.uninstall),
-                        MenuEntry(entry='',
-                                  function=None),
+                        MenuEntry(entry='',function=None),
                         MenuEntry(entry='Status',
                                   function=self.view_service_status)]
 
@@ -341,67 +310,53 @@ class RobotUpstart():
         subprocess.run(shlex.split('sudo systemctl daemon-reload'))
 
     def install(self):
-        try:
-            self.uninstall()
+        self.uninstall()
 
-            rmw = os.environ['RMW_IMPLEMENTATION']
-            if rmw == 'rmw_fastrtps_cpp':
-                rmw_config = os.environ['FASTRTPS_DEFAULT_PROFILES_FILE']
-            else:
-                rmw_config = os.environ['CYCLONEDDS_URI']
+        rmw = os.environ['RMW_IMPLEMENTATION']
+        if rmw == 'rmw_fastrtps_cpp':
+            rmw_config = os.environ['FASTRTPS_DEFAULT_PROFILES_FILE']
+        else:
+            rmw_config = os.environ['CYCLONEDDS_URI']
 
-            turtlebot4_job = robot_upstart.Job(
-                name='turtlebot4',
-                workspace_setup=os.environ['ROBOT_SETUP'],
-                rmw=rmw,
-                rmw_config=rmw_config,
-                systemd_after='network-online.target')
+        turtlebot4_job = robot_upstart.Job(
+            name='turtlebot4',
+            workspace_setup=os.environ['ROBOT_SETUP'],
+            rmw=rmw,
+            rmw_config=rmw_config,
+            systemd_after='network-online.target')
 
-            turtlebot4_job.symlink = True
-            turtlebot4_job.add(
-                package='turtlebot4_bringup',
-                filename=f'launch/{self.conf.get(SystemOptions.MODEL)}.launch.py'
-            )
-            turtlebot4_job.install()
+        turtlebot4_job.symlink = True
+        turtlebot4_job.add(package='turtlebot4_bringup',
+                           filename='launch/{0}.launch.py'.format(
+                            self.conf.get(SystemOptions.MODEL)))
+        turtlebot4_job.install()
 
-            if self.conf.get(DiscoveryOptions.ENABLED):
-                discovery_job = robot_upstart.Job(workspace_setup=os.environ['ROBOT_SETUP'])
-                discovery_job.install(Provider=TurtleBot4Extras)
-                subprocess.run(shlex.split('sudo systemctl restart discovery.service'))
+        if self.conf.get(DiscoveryOptions.ENABLED):
+            discovery_job = robot_upstart.Job(workspace_setup=os.environ['ROBOT_SETUP'])
+            discovery_job.install(Provider=TurtleBot4Extras)
+            subprocess.run(shlex.split('sudo systemctl restart discovery.service'))
 
-            self.daemon_reload()
-
-        except KeyError as err:
-            ErrorPrompt(f'Failed to install systemd job:\n{err} is not defined').show()
-        except Exception as err:
-            ErrorPrompt(f'Failed to install systemd job:\n{err}').show()
+        self.daemon_reload()
 
     def uninstall(self):
-        try:
-            self.stop()
+        self.stop()
 
-            # Uninstall Turtlebot4 Service
-            turtlebot4_job = robot_upstart.Job(
-                name='turtlebot4',
-                workspace_setup=os.environ['ROBOT_SETUP'])
-            turtlebot4_job.uninstall()
+        # Uninstall Turtlebot4 Service
+        turtlebot4_job = robot_upstart.Job(
+            name='turtlebot4',
+            workspace_setup=os.environ['ROBOT_SETUP'])
+        turtlebot4_job.uninstall()
 
-            # Uninstall Discovery Server Service
-            if os.path.exists('/lib/systemd/system/discovery.service'):
-                subprocess.run(shlex.split(
-                    'sudo systemctl stop discovery.service'), capture_output=True)
-                discovery_job = robot_upstart.Job(workspace_setup=os.environ['ROBOT_SETUP'])
-                discovery_job.uninstall(Provider=TurtleBot4Extras)
+        # Uninstall Discovery Server Service
+        if os.path.exists('/lib/systemd/system/discovery.service'):
+            subprocess.run(shlex.split('sudo systemctl stop discovery.service'), capture_output=True)
+            discovery_job = robot_upstart.Job(workspace_setup=os.environ['ROBOT_SETUP'])
+            discovery_job.uninstall(Provider=TurtleBot4Extras)
 
-            self.daemon_reload()
-        except KeyError as err:
-            ErrorPrompt(f'Failed to uninstall existing systemd job:\n{err} is not defined').show()
-        except Exception as err:
-            ErrorPrompt(f'Failed to uninstall existing systemd job:\n{err}').show()
+        self.daemon_reload()
 
 
 class TurtleBot4Extras(robot_upstart.providers.Generic):
-
     def post_install(self):
         pass
 
@@ -411,26 +366,26 @@ class TurtleBot4Extras(robot_upstart.providers.Generic):
         with open('/etc/turtlebot4/discovery.sh') as f:
             discovery_sh_contents = f.read()
         return {
-            '/lib/systemd/system/discovery.service': {
-                'content': discovery_conf_contents,
-                'mode': 0o644
+            "/lib/systemd/system/discovery.service": {
+                "content": discovery_conf_contents,
+                "mode": 0o644
             },
-            '/usr/sbin/discovery': {
-                'content': discovery_sh_contents,
-                'mode': 0o755
+            "/usr/sbin/discovery": {
+                "content": discovery_sh_contents,
+                "mode": 0o755
             },
-            '/etc/systemd/system/multi-user.target.wants/discovery.service': {
-                'symlink': '/lib/systemd/system/discovery.service'
+            "/etc/systemd/system/multi-user.target.wants/discovery.service": {
+                "symlink": "/lib/systemd/system/discovery.service"
             }}
 
     def generate_uninstall(self):
         return {
-            '/lib/systemd/system/discovery.service': {
-                'remove': True
+            "/lib/systemd/system/discovery.service": {
+                "remove": True
             },
-            '/usr/sbin/discovery': {
-                'remove': True
+            "/usr/sbin/discovery": {
+                "remove": True
             },
-            '/etc/systemd/system/multi-user.target.wants/discovery.service': {
-                'remove': True
+            "/etc/systemd/system/multi-user.target.wants/discovery.service": {
+                "remove": True
             }}
