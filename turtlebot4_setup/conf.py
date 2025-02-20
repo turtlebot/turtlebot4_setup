@@ -130,6 +130,7 @@ class Conf():
         self.netplan_wifis_file = os.path.join(self.netplan_dir, '50-wifis.yaml')
         self.discovery_sh_file = os.path.join(self.setup_dir, 'discovery.sh')
         self.hostname_file = '/etc/hostname'
+        self.fw_user_data_file = '/boot/firmware/user-data'
 
         self.system_conf = copy.deepcopy(self.default_system_conf)
         self.wifi_conf = copy.deepcopy(self.default_wifi_conf)
@@ -229,6 +230,11 @@ class Conf():
         with open('/tmp' + self.hostname_file, 'w') as f:
             f.write(self.get(SystemOptions.HOSTNAME))
         subprocess.run(shlex.split('sudo mv /tmp' + self.hostname_file + ' ' + self.hostname_file))
+
+        # update /boot/firmware/user-data with the new hostname
+        subprocess.run(shlex.split(f'cp {self.fw_user_data_file} /tmp/user-data'))
+        subprocess.run(shlex.split(f'sed -i -E "s/^hostname:.+/hostname: {self.get(SystemOptions.HOSTNAME)}/" /tmp/user-data'))
+        subprocess.run(shlex.split(f'sudo mv /tmp/user-data {self.fw_user_data_file}'))
 
     def read_wifi(self):
         try:
