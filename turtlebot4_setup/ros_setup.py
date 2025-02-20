@@ -408,6 +408,7 @@ class TurtleBot4Extras(robot_upstart.providers.Generic):
     def generate_install(self):
         with open('/etc/turtlebot4/discovery.conf') as f:
             discovery_conf_contents = f.read()
+            discovery_conf_contents = self.fix_conf_username(discovery_conf_contents)
         with open('/etc/turtlebot4/discovery.sh') as f:
             discovery_sh_contents = f.read()
         return {
@@ -434,3 +435,15 @@ class TurtleBot4Extras(robot_upstart.providers.Generic):
             '/etc/systemd/system/multi-user.target.wants/discovery.service': {
                 'remove': True
             }}
+
+    def fix_conf_username(self, discovery_conf_contents):
+        """
+        Replace the `User=ubuntu` text in the configuration with the current username
+
+        @return  The modified config file contents
+        """
+        if os.getlogin() == 'ubuntu':
+            # no changes needed!
+            return discovery_conf_contents
+
+        return discovery_conf_contents.replace('User=ubuntu', f'User={os.getlogin()}')
