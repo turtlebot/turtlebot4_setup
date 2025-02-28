@@ -87,7 +87,7 @@ class BashSetup():
                                   function=self.set_fastrtps_default_profiles_file),
                         MenuEntry('', None),
                         MenuEntry(entry='Apply Defaults', function=self.apply_defaults),
-                        MenuEntry(entry='Save', function=self.save_settings),]
+                        MenuEntry(entry='Save', function=self.save_settings), ]
 
         self.menu = Menu(self.title, self.entries)
 
@@ -438,7 +438,7 @@ class TurtleBot4Extras(robot_upstart.providers.Generic):
 
     def fix_conf_username(self, discovery_conf_contents):
         """
-        Replace the `User=ubuntu` text in the configuration with the current username
+        Replace the `User=ubuntu` text in the configuration with the current username.
 
         @return  The modified config file contents
         """
