@@ -234,7 +234,11 @@ class Conf():
         # update /boot/firmware/user-data with the new hostname
         subprocess.run(shlex.split(f'cp {self.fw_user_data_file} /tmp/user-data'))
         subprocess.run(shlex.split(f'sed -i -E "s/^hostname:.+/hostname: {self.get(SystemOptions.HOSTNAME)}/" /tmp/user-data'))  # noqa: E501
-        subprocess.run(shlex.split(f'sudo mv /tmp/user-data {self.fw_user_data_file}'))
+        subprocess.run(
+            shlex.split(f'sudo mv /tmp/user-data {self.fw_user_data_file}'),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
 
     def read_wifi(self):
         try:
