@@ -214,7 +214,12 @@ class Conf():
             system = f.readlines()
             for i, line in enumerate(system):
                 is_conf = False
-                for k in [SystemOptions.MODEL, SystemOptions.VERSION, SystemOptions.ROS]:
+                for k in [
+                    SystemOptions.MODEL,
+                    SystemOptions.VERSION,
+                    SystemOptions.ROS,
+                    SystemOptions.HOSTNAME,
+                ]:
                     if k in line:
                         system[i] = f'{k}:{self.system_conf[k]}\n'
                         is_conf = True
