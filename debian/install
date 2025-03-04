@@ -1,3 +1,4 @@
 scripts/* /usr/bin/
 udev/*.rules /etc/udev/rules.d/
 etc/* /etc/
+install_config/logind/70-clearpath-standard-logind.conf /usr/lib/systemd/logind.conf.d/
