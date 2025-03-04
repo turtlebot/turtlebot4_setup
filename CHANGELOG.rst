@@ -2,8 +2,8 @@
 Changelog for package turtlebot4_setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.3 (2025-03-04)
+------------------
 * Update the hostname in `/boot/firmware/user-data` (`#19 <https://github.com/turtlebot/turtlebot4_setup/issues/19>`_)
   * Update the hostname in /boot/firmware/user-data as well as /etc/hostname to ensure it persists properly across reboots
   * Suppress error output about failure to preserve permissions across filesystems
