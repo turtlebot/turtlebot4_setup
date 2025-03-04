@@ -2,6 +2,21 @@
 Changelog for package turtlebot4_setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update the hostname in `/boot/firmware/user-data` (`#19 <https://github.com/turtlebot/turtlebot4_setup/issues/19>`_)
+  * Update the hostname in /boot/firmware/user-data as well as /etc/hostname to ensure it persists properly across reboots
+  * Suppress error output about failure to preserve permissions across filesystems
+  * Write the updated hostname to the turtlebot4/system file
+* Fix/shm (`#21 <https://github.com/turtlebot/turtlebot4_setup/issues/21>`_)
+  Turn off clearing of SHM on log out (interfered with services)
+* Replace `User=ubuntu` with `User={os.getlogin()}` when generating the discovery server configuration file if necessary (`#20 <https://github.com/turtlebot/turtlebot4_setup/issues/20>`_)
+* Fix tag order
+* Update package maintainers
+* Add an alias to reconnect to a previously-paired game controller
+* Add a udev rule for the Logitech F710 family of controllers
+* Contributors: Chris Iverach-Brereton, Hilary Luo
+
 2.0.2 (2024-10-23)
 ------------------
 * Add e2fsck to SD-flasher script
