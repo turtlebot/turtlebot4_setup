@@ -2,6 +2,12 @@
 Changelog for package turtlebot4_setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix/shm (`#21 <https://github.com/turtlebot/turtlebot4_setup/issues/21>`_) (`#22 <https://github.com/turtlebot/turtlebot4_setup/issues/22>`_)
+  Turn off clearing of SHM on log out (interfered with services)
+* Contributors: Hilary Luo
+
 1.0.5 (2025-01-14)
 ------------------
 * Remove dhcp true because it was causing eth0 to lose the static IP (`#17 <https://github.com/turtlebot/turtlebot4_setup/issues/17>`_)
