@@ -2,8 +2,8 @@
 Changelog for package turtlebot4_setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.6 (2025-03-06)
+------------------
 * Fix/shm (`#21 <https://github.com/turtlebot/turtlebot4_setup/issues/21>`_) (`#22 <https://github.com/turtlebot/turtlebot4_setup/issues/22>`_)
   Turn off clearing of SHM on log out (interfered with services)
 * Contributors: Hilary Luo
